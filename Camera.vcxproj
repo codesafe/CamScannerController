@@ -1,0 +1,141 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM64">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM64">
+      <Configuration>Release</Configuration>
+      <Platform>ARM64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{ef098f71-d18e-4ed5-aed4-f27523aa14cf}</ProjectGuid>
+    <Keyword>Linux</Keyword>
+    <RootNamespace>Camera</RootNamespace>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <ApplicationType>Linux</ApplicationType>
+    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
+    <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
+    <LinuxProjectType>{2238F9CD-F817-4ECC-BD14-2524D2669B35}</LinuxProjectType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <ItemGroup>
+    <ClCompile Include="cam_controller.cpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cam_controller.h" />
+    <ClInclude Include="include\gphoto2pp\button_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\camera_abilities_list_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\camera_capture_type_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\camera_event_type_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\camera_file_path_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\camera_file_type_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\camera_file_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\camera_list_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\camera_widget_type_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\camera_widget_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\camera_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\choices_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\date_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\exceptions.hpp" />
+    <ClInclude Include="include\gphoto2pp\float_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\gp_port_info_list_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\helper_camera_wrapper.hpp" />
+    <ClInclude Include="include\gphoto2pp\helper_context.hpp" />
+    <ClInclude Include="include\gphoto2pp\helper_debugging.hpp" />
+    <ClInclude Include="include\gphoto2pp\helper_gphoto2.hpp" />
+    <ClInclude Include="include\gphoto2pp\helper_widgets.hpp" />
+    <ClInclude Include="include\gphoto2pp\int_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\log.h" />
+    <ClInclude Include="include\gphoto2pp\menu_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\non_value_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\observer.hpp" />
+    <ClInclude Include="include\gphoto2pp\radio_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\range_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\range_widget_range.hpp" />
+    <ClInclude Include="include\gphoto2pp\section_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\string_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\text_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\toggle_widget.hpp" />
+    <ClInclude Include="include\gphoto2pp\value_widget_base.hpp" />
+    <ClInclude Include="include\gphoto2pp\window_widget.hpp" />
+    <ClInclude Include="samples.h" />
+  </ItemGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <LibraryDependencies>gphoto2;gphoto2_port;gphoto2pp;%(LibraryDependencies)</LibraryDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>./lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SharedLibrarySearchPath>%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Link>
+      <AdditionalDependencies>gphoto2;gphoto2pp;%(AdditionalDependencies)</AdditionalDependencies>
+      <LibraryDependencies>%(LibraryDependencies)</LibraryDependencies>
+      <SharedLibrarySearchPath>./lib;%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+      <AdditionalLibraryDirectories>./lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

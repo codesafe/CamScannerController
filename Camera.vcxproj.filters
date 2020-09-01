@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{3e26de79-26c1-41df-90d0-8d58da9a6ab6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\gphoto2pp\button_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\camera_abilities_list_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\camera_capture_type_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\camera_event_type_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\camera_file_path_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\camera_file_type_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\camera_file_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\camera_list_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\camera_widget_type_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\camera_widget_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\camera_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\choices_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\date_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\exceptions.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\float_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\gp_port_info_list_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\helper_camera_wrapper.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\helper_context.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\helper_debugging.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\helper_gphoto2.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\helper_widgets.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\int_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\log.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\menu_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\non_value_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\observer.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\radio_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\range_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\range_widget_range.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\section_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\string_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\text_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\toggle_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\value_widget_base.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="include\gphoto2pp\window_widget.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="samples.h" />
+    <ClInclude Include="cam_controller.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="cam_controller.cpp" />
+  </ItemGroup>
+</Project>
