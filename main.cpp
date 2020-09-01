@@ -1,76 +1,161 @@
-#if 0
+#if 1
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
 
+#include <gphoto2/gphoto2.h>
 #include <gphoto2/gphoto2-camera.h>
 
-#include "samples.h"
+#include "./samples.h"
+#include "./camera_context.h"
 
-/* Sample autodetection program.
- *
- * This program can autodetect a single camera and then calls a
- * simple function in it (summary).
- */
 
-int main(int argc, char** argv) {
+static void errordumper(GPLogLevel level, const char* domain, const char* str,
+	void* data) {
+	fprintf(stdout, "%s\n", str);
+}
+
+static void
+capture_to_memory(Camera* camera, GPContext* context, const char** ptr, unsigned long int* size) {
+	int retval;
+	CameraFile* file;
+	CameraFilePath camera_file_path;
+
+	printf("Capturing.\n");
+
+	/* NOP: This gets overridden in the library to /capt0000.jpg */
+	strcpy(camera_file_path.folder, "/");
+	strcpy(camera_file_path.name, "foo.jpg");
+
+	retval = gp_camera_capture(camera, GP_CAPTURE_IMAGE, &camera_file_path, context);
+	printf("  Retval: %d\n", retval);
+
+	printf("Pathname on the camera: %s/%s\n", camera_file_path.folder, camera_file_path.name);
+
+	retval = gp_file_new(&file);
+	printf("  Retval: %d\n", retval);
+	retval = gp_camera_file_get(camera, camera_file_path.folder, camera_file_path.name,
+		GP_FILE_TYPE_NORMAL, file, context);
+	printf("  Retval: %d\n", retval);
+
+	gp_file_get_data_and_size(file, ptr, size);
+
+	printf("Deleting.\n");
+	retval = gp_camera_file_delete(camera, camera_file_path.folder, camera_file_path.name,
+		context);
+	printf("  Retval: %d\n", retval);
+	/*gp_file_free(file); */
+}
+
+static void
+capture_to_file(Camera* camera, GPContext* context, char* fn) {
+	int fd, retval;
+	CameraFile* file;
+	CameraFilePath camera_file_path;
+
+	printf("Capturing.\n");
+
+	/* NOP: This gets overridden in the library to /capt0000.jpg */
+	strcpy(camera_file_path.folder, "/");
+	strcpy(camera_file_path.name, "foo.jpg");
+
+	retval = gp_camera_capture(camera, GP_CAPTURE_IMAGE, &camera_file_path, context);
+	printf("  Retval: %d\n", retval);
+
+	printf("Pathname on the camera: %s/%s\n", camera_file_path.folder, camera_file_path.name);
+
+	fd = open(fn, O_CREAT | O_WRONLY, 0644);
+	retval = gp_file_new_from_fd(&file, fd);
+	printf("  Retval: %d\n", retval);
+	retval = gp_camera_file_get(camera, camera_file_path.folder, camera_file_path.name,
+		GP_FILE_TYPE_NORMAL, file, context);
+	printf("  Retval: %d\n", retval);
+
+	printf("Deleting.\n");
+	retval = gp_camera_file_delete(camera, camera_file_path.folder, camera_file_path.name,
+		context);
+	printf("  Retval: %d\n", retval);
+
+	gp_file_free(file);
+}
+
+int main(int argc, char** argv) 
+{
 	Camera* camera;
-	int		ret;
-	char* owner;
-	GPContext* context;
-	CameraText	text;
+	int	retval;
+	//GPContext* context = sample_create_context();
+	GPContext* context = cameracontext::getInstance()->getcontext();
 
-	context = sample_create_context(); /* see context.c */
+
+	FILE* f;
+	char* data;
+	unsigned long size;
+
+	gp_log_add_func(GP_LOG_ERROR, errordumper, NULL);
 	gp_camera_new(&camera);
 
-	/* This call will autodetect cameras, take the
-	 * first one from the list and use it. It will ignore
-	 * any others... See the *multi* examples on how to
-	 * detect and use more than the first one.
+	/* When I set GP_LOG_DEBUG instead of GP_LOG_ERROR above, I noticed that the
+	 * init function seems to traverse the entire filesystem on the camera.  This
+	 * is partly why it takes so long.
+	 * (Marcus: the ptp2 driver does this by default currently.)
 	 */
-	ret = gp_camera_init(camera, context);
-	if (ret < GP_OK) {
-		printf("No camera auto detected.\n");
-		gp_camera_free(camera);
-		return 0;
+	printf("Camera init.  Takes about 10 seconds.\n");
+	retval = gp_camera_init(camera, context);
+	if (retval != GP_OK) {
+		printf("  Retval of capture_to_file: %d\n", retval);
+		exit(1);
 	}
+	capture_to_file(camera, context, "foo.jpg");
 
-	/* Simple query the camera summary text */
-	ret = gp_camera_get_summary(camera, &text, context);
-	if (ret < GP_OK) {
-		printf("Camera failed retrieving summary.\n");
-		gp_camera_free(camera);
-		return 0;
-	}
-	printf("Summary:\n%s\n", text.text);
+	//capture_to_memory(camera, context, (const char**)&data, &size);
 
-	/* Simple query of a string configuration variable. */
-	ret = get_config_value_string(camera, "owner", &owner, context);
-	if (ret >= GP_OK) {
-		printf("Owner: %s\n", owner);
-		free(owner);
+/*
+	f = fopen("foo2.jpg", "wb");
+	if (f) {
+		retval = fwrite(data, size, 1, f);
+		if (retval != size) {
+			printf("  fwrite size %ld, written %d\n", size, retval);
+		}
+		fclose(f);
 	}
+	else
+		printf("  fopen foo2.jpg failed.\n");
+*/
+
 	gp_camera_exit(camera, context);
-	gp_camera_free(camera);
-	gp_context_unref(context);
 	return 0;
 }
 
 
 #else
 
-#include "./include/gphoto2pp/helper_gphoto2.hpp"
-#include "./include/gphoto2pp/camera_wrapper.hpp"
-#include "./include/gphoto2pp/exceptions.hpp"
 
 #include <string>
-
-
 #include <iostream>
+#include "cam_controller.h"
+#include "utils.h"
 
 int main(int argc, char* argv[]) 
 {
+	cam_controller* cam = new cam_controller();
+	cam->init();
+
+	Utils::Sleep(2);
+	cam->take_shot();
+
+	delete cam;
+
+
+/*
 	std::string model;
 	std::string port;
 
@@ -107,6 +192,7 @@ int main(int argc, char* argv[])
 		std::cout << "gphoto2 Exception Code: " << e.getResultCode() << std::endl;
 		std::cout << "Exception Message: " << e.what() << std::endl;
 	}
+*/
 }
 
 #endif

@@ -75,10 +75,18 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <ItemGroup>
+    <ClCompile Include="camera_action.cpp" />
+    <ClCompile Include="camera_context.cpp" />
     <ClCompile Include="cam_controller.cpp" />
+    <ClCompile Include="config.cpp" />
+    <ClCompile Include="context.cpp" />
+    <ClCompile Include="logger.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="memdb.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera_action.h" />
+    <ClInclude Include="camera_context.h" />
     <ClInclude Include="cam_controller.h" />
     <ClInclude Include="include\gphoto2pp\button_widget.hpp" />
     <ClInclude Include="include\gphoto2pp\camera_abilities_list_wrapper.hpp" />
@@ -115,7 +123,11 @@
     <ClInclude Include="include\gphoto2pp\toggle_widget.hpp" />
     <ClInclude Include="include\gphoto2pp\value_widget_base.hpp" />
     <ClInclude Include="include\gphoto2pp\window_widget.hpp" />
+    <ClInclude Include="logger.h" />
+    <ClInclude Include="memdb.h" />
+    <ClInclude Include="predef.h" />
     <ClInclude Include="samples.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
