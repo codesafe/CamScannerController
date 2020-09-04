@@ -46,6 +46,8 @@ bool cam_controller::setcam_param()
 {
 
 
+
+
 	return true;
 }
 

@@ -18,20 +18,20 @@ static void ctx_status_func(GPContext* context, const char* str, void* data)
 //////////////////////////////////////////////////////////////////////////
 
 
-cameracontext* cameracontext::_instance = nullptr;
+Camera_Context* Camera_Context::_instance = nullptr;
 
-cameracontext::cameracontext()
+Camera_Context::Camera_Context()
+{
+	context = nullptr;
+	camera = nullptr;
+}
+
+Camera_Context::~Camera_Context()
 {
 }
 
-cameracontext::~cameracontext()
+GPContext* Camera_Context::getcontext()
 {
-}
-
-GPContext* cameracontext::getcontext()
-{
-	GPContext* context;
-
 	/* This is the mandatory part */
 	context = gp_context_new();
 
@@ -48,4 +48,10 @@ GPContext* cameracontext::getcontext()
 						ctx_progress_stop_func, p);
 		*/
 	return context;
+}
+
+Camera* Camera_Context::getcamera()
+{
+	gp_camera_new(&camera);
+	return camera;
 }

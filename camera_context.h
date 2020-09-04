@@ -2,24 +2,27 @@
 
 #include <gphoto2/gphoto2-camera.h>
 
-class cameracontext
+class Camera_Context
 {
 public :
-
-	//static cameracontext* instance;
-	static cameracontext* getInstance()
+	static Camera_Context* getInstance()
 	{
 		if (_instance == nullptr)
-			_instance = new cameracontext();
+			_instance = new Camera_Context();
 		return _instance;
 	};
 
 	GPContext* getcontext();
+	Camera* getcamera();
 
 private :
-	cameracontext();
-	~cameracontext();
+	static Camera_Context* _instance;
 
-	static cameracontext* _instance;
+	Camera_Context();
+	~Camera_Context();
+
+private:
+	Camera* camera;
+	GPContext* context;
 
 };

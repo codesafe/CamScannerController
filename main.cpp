@@ -1,5 +1,3 @@
-#if 1
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -17,182 +15,57 @@
 
 #include "./samples.h"
 #include "./camera_context.h"
-
-
-static void errordumper(GPLogLevel level, const char* domain, const char* str,
-	void* data) {
-	fprintf(stdout, "%s\n", str);
-}
-
-static void
-capture_to_memory(Camera* camera, GPContext* context, const char** ptr, unsigned long int* size) {
-	int retval;
-	CameraFile* file;
-	CameraFilePath camera_file_path;
-
-	printf("Capturing.\n");
-
-	/* NOP: This gets overridden in the library to /capt0000.jpg */
-	strcpy(camera_file_path.folder, "/");
-	strcpy(camera_file_path.name, "foo.jpg");
-
-	retval = gp_camera_capture(camera, GP_CAPTURE_IMAGE, &camera_file_path, context);
-	printf("  Retval: %d\n", retval);
-
-	printf("Pathname on the camera: %s/%s\n", camera_file_path.folder, camera_file_path.name);
-
-	retval = gp_file_new(&file);
-	printf("  Retval: %d\n", retval);
-	retval = gp_camera_file_get(camera, camera_file_path.folder, camera_file_path.name,
-		GP_FILE_TYPE_NORMAL, file, context);
-	printf("  Retval: %d\n", retval);
-
-	gp_file_get_data_and_size(file, ptr, size);
-
-	printf("Deleting.\n");
-	retval = gp_camera_file_delete(camera, camera_file_path.folder, camera_file_path.name,
-		context);
-	printf("  Retval: %d\n", retval);
-	/*gp_file_free(file); */
-}
-
-static void
-capture_to_file(Camera* camera, GPContext* context, char* fn) {
-	int fd, retval;
-	CameraFile* file;
-	CameraFilePath camera_file_path;
-
-	printf("Capturing.\n");
-
-	/* NOP: This gets overridden in the library to /capt0000.jpg */
-	strcpy(camera_file_path.folder, "/");
-	strcpy(camera_file_path.name, "foo.jpg");
-
-	retval = gp_camera_capture(camera, GP_CAPTURE_IMAGE, &camera_file_path, context);
-	printf("  Retval: %d\n", retval);
-
-	printf("Pathname on the camera: %s/%s\n", camera_file_path.folder, camera_file_path.name);
-
-	fd = open(fn, O_CREAT | O_WRONLY, 0644);
-	retval = gp_file_new_from_fd(&file, fd);
-	printf("  Retval: %d\n", retval);
-	retval = gp_camera_file_get(camera, camera_file_path.folder, camera_file_path.name,
-		GP_FILE_TYPE_NORMAL, file, context);
-	printf("  Retval: %d\n", retval);
-
-	printf("Deleting.\n");
-	retval = gp_camera_file_delete(camera, camera_file_path.folder, camera_file_path.name,
-		context);
-	printf("  Retval: %d\n", retval);
-
-	gp_file_free(file);
-}
+#include "./camera_action.h"
+#include "./utils.h"
 
 int main(int argc, char** argv) 
 {
-	Camera* camera;
 	int	retval;
-	//GPContext* context = sample_create_context();
-	GPContext* context = cameracontext::getInstance()->getcontext();
-
+	GPContext* context = Camera_Context::getInstance()->getcontext();
+	Camera* camera = Camera_Context::getInstance()->getcamera();
 
 	FILE* f;
 	char* data;
 	unsigned long size;
 
-	gp_log_add_func(GP_LOG_ERROR, errordumper, NULL);
-	gp_camera_new(&camera);
+	//gp_log_add_func(GP_LOG_ERROR, errordumper, NULL);
 
-	/* When I set GP_LOG_DEBUG instead of GP_LOG_ERROR above, I noticed that the
-	 * init function seems to traverse the entire filesystem on the camera.  This
-	 * is partly why it takes so long.
-	 * (Marcus: the ptp2 driver does this by default currently.)
-	 */
-	printf("Camera init.  Takes about 10 seconds.\n");
 	retval = gp_camera_init(camera, context);
-	if (retval != GP_OK) {
+	if (retval != GP_OK) 
+	{
 		printf("  Retval of capture_to_file: %d\n", retval);
 		exit(1);
 	}
-	capture_to_file(camera, context, "foo.jpg");
 
-	//capture_to_memory(camera, context, (const char**)&data, &size);
+	GPParams param;
+	param.camera = camera;
+	param.context = context;
 
-/*
-	f = fopen("foo2.jpg", "wb");
-	if (f) {
-		retval = fwrite(data, size, 1, f);
-		if (retval != size) {
-			printf("  fwrite size %ld, written %d\n", size, retval);
-		}
-		fclose(f);
-	}
-	else
-		printf("  fopen foo2.jpg failed.\n");
-*/
+	Camera_Action* action = new Camera_Action();
+	action->get_config(&param, "iso");
+ 	action->get_config(&param, "shutterspeed");
+// 	action->get_camera_config(&param, "aeb");
+ 	action->get_config(&param, "aperture");
+
+	//int r = action->get_camera_config(&param, "iso");
+
+	printf("Set Config\n");
+	action->set_camera_config(&param, "iso", 0);
+	action->set_camera_config(&param, "shutterspeed", 36);
+	action->set_camera_config(&param, "aperture", 5);
+
+	// ¹Ý¼ÅÅÍ
+	printf("Half Press\n");
+	action->set_camera_config(&param, "eosremoterelease", 6);
+	action->action_camera_wait_focus(&param);
+
+	//action->action_camera_wait_event(&param, "3s");
+
+	printf("Shot\n");
+	action->shot_to_file(&param, "test2.jpg");
+	//action->set_camera_config(&param, "eosremoterelease", 5);
 
 	gp_camera_exit(camera, context);
 	return 0;
 }
 
-
-#else
-
-
-#include <string>
-#include <iostream>
-#include "cam_controller.h"
-#include "utils.h"
-
-int main(int argc, char* argv[]) 
-{
-	cam_controller* cam = new cam_controller();
-	cam->init();
-
-	Utils::Sleep(2);
-	cam->take_shot();
-
-	delete cam;
-
-
-/*
-	std::string model;
-	std::string port;
-
-	// runs the autodetect method and returns the first camera we find (if any)
-	std::cout << "#############################" << std::endl;
-	std::cout << "# autoDetect - first camera #" << std::endl;
-	std::cout << "#############################" << std::endl;
-	try
-	{
-		auto cameraPair = gphoto2pp::autoDetect();
-		std::cout << "model: " << cameraPair.first << " port: " << cameraPair.second << std::endl;
-
-		model = cameraPair.first;
-		port = cameraPair.second;
-	}
-	catch (gphoto2pp::exceptions::NoCameraFoundError & e)
-	{
-		std::cout << "gphoto2 couldn't detect any cameras connected to the computer" << std::endl;
-		std::cout << "Exception Message: " << e.what() << std::endl;
-	}
-
-	try
-	{
-		std::cout << "connecting to the first camera (model and port above)..." << std::endl;
-		auto cameraWrapper = gphoto2pp::CameraWrapper(model, port);
-
-		std::cout << "#############################" << std::endl;
-		std::cout << "# print camera summary      #" << std::endl;
-		std::cout << "#############################" << std::endl;
-		std::cout << cameraWrapper.getSummary() << std::endl;
-	}
-	catch (gphoto2pp::exceptions::gphoto2_exception & e)
-	{
-		std::cout << "gphoto2 Exception Code: " << e.getResultCode() << std::endl;
-		std::cout << "Exception Message: " << e.what() << std::endl;
-	}
-*/
-}
-
-#endif

@@ -7,7 +7,8 @@
 
 void Logger::log(int logtype, const char* format, ...)
 {
-	bool consolelog_enable = (CONSOLE_LOG & logtype) == 1 ? false : true;
+	//bool consolelog_enable = (CONSOLE_LOG & logtype) == 1 ? false : true;
+	bool consolelog_enable = true;
 
 	//bool filelog_enable = (FILE_LOG & logtype) == 0 ? false : true;		// define으로 제어
 	bool filelog_enable = MemDB::getInstance()->getBoolValue("filelog");
