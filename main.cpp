@@ -13,20 +13,106 @@
 #include <gphoto2/gphoto2.h>
 #include <gphoto2/gphoto2-camera.h>
 
-#include "./samples.h"
+//#include "./samples.h"
 #include "./camera_context.h"
 #include "./camera_action.h"
 #include "./utils.h"
 
+void _get_portinfo_list(GPParams* p)
+{
+	int count, result;
+	GPPortInfoList* list = NULL;
+
+	if (gp_port_info_list_new(&list) < GP_OK)
+		return;
+
+	result = gp_port_info_list_load(list);
+	
+	if (result < 0) 
+	{
+		gp_port_info_list_free(list);
+		return;
+	}
+
+	count = gp_port_info_list_count(list);
+	if (count < 0) 
+	{
+		gp_port_info_list_free(list);
+		return;
+	}
+
+	GPPortInfo info;
+	for (int x = 0; x < count; x++) 
+	{
+		char* xname, * xpath;
+		result = gp_port_info_list_get_info(list, x, &info);
+		if (result < 0)
+			break;
+		gp_port_info_get_name(info, &xname);
+		gp_port_info_get_path(info, &xpath);
+		printf("%-32s %-32s\n", xpath, xname);
+	}
+
+	p->portinfo_list = list;
+}
+
+
 int main(int argc, char** argv) 
 {
 	int	retval;
+	//GPPortInfoList* portinfo_list = NULL;
+
+	//_get_portinfo_list(portinfo_list);
+
+
+	CameraManager::getInstance()->GetCameraList();
+	CameraManager::getInstance()->CreateAllCamera();
+
+
+/*
+	char* port = "usb:001,011";
+	char verified_port[1024];
+	verified_port[sizeof(verified_port) - 1] = '\0';
+	if (!strchr(port, ':')) 
+	{
+		if (!strcmp(port, "usb")) 
+		{
+			strncpy(verified_port, "usb:",sizeof(verified_port) - 1);
+		}
+		else if (strncmp(port, "/dev/", 5) == 0) {
+			strncpy(verified_port, "serial:", sizeof(verified_port) - 1);
+			strncat(verified_port, port, sizeof(verified_port) - strlen(verified_port) - 1);
+		}
+		else if (strncmp(port, "/proc/", 6) == 0) 
+		{
+			strncpy(verified_port, "usb:", sizeof(verified_port) - 1);
+			strncat(verified_port, port, sizeof(verified_port) - strlen(verified_port) - 1);
+		}
+	}
+	else
+		strncpy(verified_port, port, sizeof(verified_port) - 1);
+*/
+
+/*
+	char verified_port[1024] = { "usb:001,010\0" };
+
+	GPPortInfo portinfo;
+	int p = gp_port_info_list_lookup_path(param.portinfo_list, verified_port);
+	int r = gp_port_info_list_get_info(param.portinfo_list, p, &portinfo);
+	Camera_Context::getInstance()->setcamera_port(camera, portinfo);
+
+
+	Camera_Action* action = new Camera_Action();
+	action->shot_to_file(&param, "test2.jpg");
+	gp_camera_exit(camera, context);
+*/
+
+	return 0;
+
+/*
+
 	GPContext* context = Camera_Context::getInstance()->getcontext();
 	Camera* camera = Camera_Context::getInstance()->getcamera();
-
-	FILE* f;
-	char* data;
-	unsigned long size;
 
 	//gp_log_add_func(GP_LOG_ERROR, errordumper, NULL);
 
@@ -40,8 +126,11 @@ int main(int argc, char** argv)
 	GPParams param;
 	param.camera = camera;
 	param.context = context;
+	param.portinfo_list = NULL;
 
 	Camera_Action* action = new Camera_Action();
+
+	
 	action->get_config(&param, "iso");
  	action->get_config(&param, "shutterspeed");
 // 	action->get_camera_config(&param, "aeb");
@@ -67,5 +156,6 @@ int main(int argc, char** argv)
 
 	gp_camera_exit(camera, context);
 	return 0;
+*/
 }
 

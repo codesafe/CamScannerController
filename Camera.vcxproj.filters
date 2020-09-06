@@ -119,6 +119,10 @@
     <ClInclude Include="camera_context.h" />
     <ClInclude Include="camera_action.h" />
     <ClInclude Include="camera_info.h" />
+    <ClInclude Include="network.h" />
+    <ClInclude Include="socket.h" />
+    <ClInclude Include="commander.h" />
+    <ClInclude Include="CameraController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cam_controller.cpp" />
@@ -127,5 +131,9 @@
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="camera_context.cpp" />
     <ClCompile Include="camera_action.cpp" />
+    <ClCompile Include="network.cpp" />
+    <ClCompile Include="socket.cpp" />
+    <ClCompile Include="commander.cpp" />
+    <ClCompile Include="CameraController.cpp" />
   </ItemGroup>
 </Project>

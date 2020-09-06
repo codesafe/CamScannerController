@@ -1,28 +1,56 @@
 #pragma once
 
-#include <gphoto2/gphoto2-camera.h>
+#include "predef.h"
+
 
 class Camera_Context
 {
 public :
-	static Camera_Context* getInstance()
-	{
-		if (_instance == nullptr)
-			_instance = new Camera_Context();
-		return _instance;
-	};
-
-	GPContext* getcontext();
-	Camera* getcamera();
-
-private :
-	static Camera_Context* _instance;
-
 	Camera_Context();
 	~Camera_Context();
 
+// 	GPContext* getContext() { return context; }
+// 	Camera* getCamera() { return camera; }
+	GPParams* getParam() { return param; }
+
+	void createCameraContext();
+	int setCameraPort(GPPortInfo &info);
+
 private:
-	Camera* camera;
-	GPContext* context;
+	GPParams* param;
+
+	static GPContextErrorFunc _error_callback(GPContext* context, const char* text, void* data);
+	static GPContextMessageFunc _message_callback(GPContext* context, const char* text, void* data);
+
+};
+
+//////////////////////////////////////////////////////////////////////////
+
+class CameraManager
+{
+public:
+	static CameraManager* getInstance()
+	{
+		if (_instance == nullptr)
+			_instance = new CameraManager();
+		return _instance;
+	};
+
+	void GetCameraList();
+	bool CreateAllCamera();
+
+private:
+	static CameraManager* _instance;
+
+	CameraManager();
+	~CameraManager();
+
+private :
+
+	std::vector<std::string>		detectedCameraNameList;
+	std::vector<Camera_Context*>	cameraList;
+
+	CameraAbilitiesList* gp_params_abilities_list(GPParams* p);
+
 
 };

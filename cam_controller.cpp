@@ -1,3 +1,5 @@
+#if 0
+
 #include <string>
 #include <iostream>
 
@@ -98,3 +100,5 @@ void cam_controller::detectAllCam()
 		std::cout << "model: " << cameraList.getName(i) << std::endl;
 	}
 }
+
+#endif

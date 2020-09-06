@@ -17,19 +17,15 @@
 #include <string>
 #include <ctime>
 #include <deque>
+#include <vector>
 #include <string.h> 
 
 #include "memdb.h"
 #include "logger.h"
 
-//using namespace std;
-//using namespace dynamixel;
+using namespace std;
 
-#ifdef WIN32
-#  define thread_local __declspec(thread) 
-#else
-#  define thread_local __thread
-#endif
+#define thread_local __thread
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -37,11 +33,23 @@
 #include <gphoto2/gphoto2-abilities-list.h>
 #include <gphoto2/gphoto2-context.h>
 
+
 typedef struct _GPParams GPParams;
 struct _GPParams 
 {
+	std::string name;
 	Camera* camera;
 	GPContext* context;
+	GPPortInfoList* portinfo_list;
+	CameraAbilitiesList* _abilities_list;
+
+	_GPParams()
+	{
+		camera = NULL;
+		GPContext* context = NULL;
+		portinfo_list = NULL;
+		_abilities_list = NULL;
+	}
 };
 
 enum wait_type 
@@ -55,7 +63,8 @@ enum wait_type
 enum download_type { DT_NO_DOWNLOAD, DT_DOWNLOAD };
 struct waitparams
 {
-	union {
+	union 
+	{
 		int milliseconds;
 		int events;
 		int frames;

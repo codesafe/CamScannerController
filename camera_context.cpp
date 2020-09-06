@@ -1,57 +1,174 @@
 
 #include <stdio.h>
-//#include <gphoto2/gphoto2-camera.h>
+#include <gphoto2/gphoto2-camera.h>
+#include <gphoto2/gphoto2-list.h>
+#include <gphoto2/gphoto2-port-log.h>
+#include <gphoto2/gphoto2-setting.h>
+#include <gphoto2/gphoto2-filesys.h>
+//#include <gphoto2/globals.h>
+
 #include "camera_context.h"
-
-static void ctx_error_func(GPContext* context, const char* str, void* data)
-{
-	fprintf(stderr, "\n*** Contexterror ***              \n%s\n", str);
-	fflush(stderr);
-}
-
-static void ctx_status_func(GPContext* context, const char* str, void* data)
-{
-	fprintf(stderr, "%s\n", str);
-	fflush(stderr);
-}
 
 //////////////////////////////////////////////////////////////////////////
 
 
-Camera_Context* Camera_Context::_instance = nullptr;
-
 Camera_Context::Camera_Context()
 {
-	context = nullptr;
-	camera = nullptr;
+	param = NULL;
 }
 
 Camera_Context::~Camera_Context()
 {
+	gp_camera_exit(param->camera, param->context);
+	gp_context_unref(param->context);
+
+	if(param->portinfo_list != NULL)
+		gp_port_info_list_free(param->portinfo_list);
+
+	if (param->_abilities_list != NULL)
+		gp_abilities_list_free(param->_abilities_list);
+
+	delete param;
 }
 
-GPContext* Camera_Context::getcontext()
+int Camera_Context::setCameraPort(GPPortInfo &info)
 {
-	/* This is the mandatory part */
-	context = gp_context_new();
+	return gp_camera_set_port_info(param->camera, info);
 
-	/* All the parts below are optional! */
-	gp_context_set_error_func(context, ctx_error_func, NULL);
-	gp_context_set_status_func(context, ctx_status_func, NULL);
-
-	/* also:
-	gp_context_set_cancel_func    (p->context, ctx_cancel_func,  p);
-		gp_context_set_message_func   (p->context, ctx_message_func, p);
-		if (isatty (STDOUT_FILENO))
-				gp_context_set_progress_funcs (p->context,
-						ctx_progress_start_func, ctx_progress_update_func,
-						ctx_progress_stop_func, p);
-		*/
-	return context;
 }
 
-Camera* Camera_Context::getcamera()
+void Camera_Context::createCameraContext()
 {
-	gp_camera_new(&camera);
-	return camera;
+	param = new GPParams();
+
+	gp_camera_new(&param->camera);
+	param->context = gp_context_new();
+	gp_context_set_error_func(param->context, (GPContextErrorFunc)Camera_Context::_error_callback, NULL);
+	gp_context_set_status_func(param->context, (GPContextMessageFunc)Camera_Context::_message_callback, NULL);
+
+	int ret = gp_camera_init(param->camera, param->context);
+	if (ret < GP_OK)
+		gp_camera_free(param->camera);
+}
+
+GPContextErrorFunc Camera_Context::_error_callback(GPContext* context, const char* text, void* data)
+{
+	return 0;
+}
+
+GPContextMessageFunc Camera_Context::_message_callback(GPContext* context, const char* text, void* data)
+{
+	return 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
+CameraManager* CameraManager::_instance = NULL;
+
+CameraManager::CameraManager()
+{
+}
+
+CameraManager::~CameraManager()
+{
+}
+
+void CameraManager::GetCameraList()
+{
+	Camera_Context* context = new Camera_Context();
+	context->createCameraContext();
+	GPParams* p = context->getParam();
+
+	int count, result;
+	if (gp_port_info_list_new(&p->portinfo_list) < GP_OK)
+		return;
+
+	result = gp_port_info_list_load(p->portinfo_list);
+	if (result < 0)
+	{
+		gp_port_info_list_free(p->portinfo_list);
+		return;
+	}
+
+	count = gp_port_info_list_count(p->portinfo_list);
+	if (count < 0)
+	{
+		gp_port_info_list_free(p->portinfo_list);
+		return;
+	}
+
+	GPPortInfo info;
+	for (int x = 0; x < count; x++)
+	{
+		char* xname, * xpath;
+		result = gp_port_info_list_get_info(p->portinfo_list, x, &info);
+		if (result < 0)
+			break;
+		gp_port_info_get_name(info, &xname);
+		gp_port_info_get_path(info, &xpath);
+		printf("%-32s %-32s\n", xpath, xname);
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+
+	{
+		detectedCameraNameList.clear();
+
+		const char* name = NULL, * value = NULL;
+		CameraList* list;
+		gp_list_new(&list);
+		gp_abilities_list_detect(gp_params_abilities_list(p), p->portinfo_list, list, p->context);
+
+		int count = gp_list_count(list);
+
+		printf("%-30s %-16s\n", "Model", "Port");
+		printf("----------------------------------------------------------\n");
+		for (int x = 0; x < count; x++) 
+		{
+			gp_list_get_name(list, x, &name);
+			gp_list_get_value(list, x, &value);
+			printf("%-30s %-16s\n", name, value);
+
+			detectedCameraNameList.push_back(std::string(value));
+		}
+		gp_list_free(list);
+
+	}
+
+	delete context;
+}
+
+
+CameraAbilitiesList* CameraManager::gp_params_abilities_list(GPParams* p)
+{
+	/* If p == NULL, the behaviour of this function is as undefined as
+	 * the expression p->abilities_list would have been. */
+	if (p->_abilities_list == NULL) 
+	{
+		gp_abilities_list_new(&p->_abilities_list);
+		gp_abilities_list_load(p->_abilities_list, p->context);
+	}
+	return p->_abilities_list;
+}
+
+
+bool CameraManager::CreateAllCamera()
+{
+	for (int i = 0; i < detectedCameraNameList.size(); i++)
+	{
+		Camera_Context* context = new Camera_Context();
+		context->createCameraContext();
+		GPParams* param = context->getParam();
+
+		char verified_port[1024] = { 0, };
+		strcpy(verified_port, detectedCameraNameList[i].c_str());
+
+		GPPortInfo portinfo;
+		int p = gp_port_info_list_lookup_path(param->portinfo_list, verified_port);
+		int r = gp_port_info_list_get_info(param->portinfo_list, p, &portinfo);
+		context->setCameraPort(portinfo);
+	}
+
+	return true;
 }

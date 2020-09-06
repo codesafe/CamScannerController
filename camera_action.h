@@ -8,6 +8,7 @@
 #include <gphoto2/gphoto2-filesys.h>
 #include <gphoto2/gphoto2-abilities-list.h>
 
+
 //struct GPParams;
 #include "predef.h"
 
@@ -30,9 +31,14 @@ public:
 	// half press
 	int action_camera_wait_focus(GPParams* p);
 
+	int get_port_list(GPParams* p);
+
+
 private:
 	int _find_widget_by_name(GPParams* p, const char* name, CameraWidget** child, CameraWidget** rootconfig);
 	int print_widget(GPParams* p, const char* name, CameraWidget* widget);
 
 	int get_widget(GPParams* p, const char* name, CameraWidget* widget);
+	void _get_portinfo_list(GPParams* p);
+	//CameraAbilitiesList* gp_params_abilities_list(GPParams* p);
 };

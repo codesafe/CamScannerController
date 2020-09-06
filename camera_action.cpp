@@ -781,3 +781,82 @@ int Camera_Action::action_camera_wait_focus(GPParams* p)
 	}
 	return GP_OK;
 }
+
+
+void Camera_Action::_get_portinfo_list(GPParams* p)
+{
+	int count, result;
+	GPPortInfoList* list = NULL;
+
+	if (p->portinfo_list)
+		return;
+
+	if (gp_port_info_list_new(&list) < GP_OK)
+		return;
+	result = gp_port_info_list_load(list);
+	if (result < 0) {
+		gp_port_info_list_free(list);
+		return;
+	}
+	count = gp_port_info_list_count(list);
+	if (count < 0) {
+		gp_port_info_list_free(list);
+		return;
+	}
+	p->portinfo_list = list;
+	return;
+}
+
+/*
+CameraAbilitiesList* Camera_Action::gp_params_abilities_list(GPParams* p)
+{
+	/ * If p == NULL, the behaviour of this function is as undefined as
+	 * the expression p->abilities_list would have been. * /
+	if (p->_abilities_list == NULL) 
+	{
+		gp_abilities_list_new(&p->_abilities_list);
+		gp_abilities_list_load(p->_abilities_list, p->context);
+	}
+	return p->_abilities_list;
+}
+
+*/
+
+int Camera_Action::get_port_list(GPParams* gp_params)
+{
+	CameraList* list;
+	CameraAbilities a;
+	const char* model = NULL, * path = NULL;
+
+	gp_camera_get_abilities(gp_params->camera, &a);
+	_get_portinfo_list(gp_params);
+
+	gp_list_new(&list);
+	//gp_abilities_list_detect(gp_params_abilities_list(gp_params), gp_params->portinfo_list, list, gp_params->context));
+	int count = gp_list_count(list);
+
+
+	int use_auto = 1;
+	if ( count == 1 && !strcmp(a.model, "") )
+	{
+		/* Exactly one camera detected */
+		gp_list_get_name(list, 0, &model);
+		gp_list_get_value(list, 0, &path);
+		if (a.model[0] && strcmp(a.model, model))
+		{
+			CameraAbilities alt;
+			int m;
+
+			//m = gp_abilities_list_lookup_model(gp_params_abilities_list(gp_params), model);
+			//gp_abilities_list_get_abilities(gp_params_abilities_list(gp_params), m, &alt);
+
+			if ((a.port == GP_PORT_USB) && (alt.port == GP_PORT_USB))
+			{
+				if ((a.usb_vendor == alt.usb_vendor) && (a.usb_product == alt.usb_product))
+					use_auto = 0;
+			}
+		}
+	}
+
+	return GP_OK;
+}
