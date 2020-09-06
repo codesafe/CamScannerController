@@ -9,8 +9,6 @@ public :
 	Camera_Context();
 	~Camera_Context();
 
-// 	GPContext* getContext() { return context; }
-// 	Camera* getCamera() { return camera; }
 	GPParams* getParam() { return param; }
 
 	void createCameraContext();
@@ -38,6 +36,9 @@ public:
 
 	void GetCameraList();
 	bool CreateAllCamera();
+	int GetAllCameraLength();
+	Camera_Context* GetCameraContext(int index);
+
 
 private:
 	static CameraManager* _instance;

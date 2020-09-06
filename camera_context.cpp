@@ -8,6 +8,7 @@
 //#include <gphoto2/globals.h>
 
 #include "camera_context.h"
+#include "logger.h"
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -155,6 +156,7 @@ CameraAbilitiesList* CameraManager::gp_params_abilities_list(GPParams* p)
 
 bool CameraManager::CreateAllCamera()
 {
+
 	for (int i = 0; i < detectedCameraNameList.size(); i++)
 	{
 		Camera_Context* context = new Camera_Context();
@@ -168,7 +170,23 @@ bool CameraManager::CreateAllCamera()
 		int p = gp_port_info_list_lookup_path(param->portinfo_list, verified_port);
 		int r = gp_port_info_list_get_info(param->portinfo_list, p, &portinfo);
 		context->setCameraPort(portinfo);
+
+		cameraList.push_back(context);
+		Logger::log(0, "Create Camera : %s", verified_port);
 	}
 
 	return true;
+}
+
+int CameraManager::GetAllCameraLength()
+{
+	return cameraList.size();
+}
+
+Camera_Context* CameraManager::GetCameraContext(int index)
+{
+	if (index >= cameraList.size())
+		return NULL;
+
+	return cameraList[index];
 }

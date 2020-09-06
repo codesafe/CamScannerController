@@ -1,15 +1,5 @@
 #pragma once
 
-#include <string>
-#include <gphoto2/gphoto2-camera.h>
-#include <gphoto2/gphoto2-context.h>
-#include <gphoto2/gphoto2-port-log.h>
-#include <gphoto2/gphoto2-setting.h>
-#include <gphoto2/gphoto2-filesys.h>
-#include <gphoto2/gphoto2-abilities-list.h>
-
-
-//struct GPParams;
 #include "predef.h"
 
 

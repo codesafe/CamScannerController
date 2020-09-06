@@ -10,51 +10,38 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <gphoto2/gphoto2.h>
-#include <gphoto2/gphoto2-camera.h>
-
-//#include "./samples.h"
+#include "./predef.h"
 #include "./camera_context.h"
 #include "./camera_action.h"
 #include "./utils.h"
+#include "./network.h"
 
-void _get_portinfo_list(GPParams* p)
+
+void mainupdate()
 {
-	int count, result;
-	GPPortInfoList* list = NULL;
-
-	if (gp_port_info_list_new(&list) < GP_OK)
-		return;
-
-	result = gp_port_info_list_load(list);
-	
-	if (result < 0) 
+	while (true)
 	{
-		gp_port_info_list_free(list);
-		return;
-	}
+		Utils::Sleep(10);
 
-	count = gp_port_info_list_count(list);
-	if (count < 0) 
-	{
-		gp_port_info_list_free(list);
-		return;
-	}
+		Network::getinstance()->update();
 
-	GPPortInfo info;
-	for (int x = 0; x < count; x++) 
-	{
-		char* xname, * xpath;
-		result = gp_port_info_list_get_info(list, x, &info);
-		if (result < 0)
-			break;
-		gp_port_info_get_name(info, &xname);
-		gp_port_info_get_path(info, &xpath);
-		printf("%-32s %-32s\n", xpath, xname);
+// 		int ret = Commander::getinstance()->update();
+// 		if (ret != 0)
+// 		{
+// 			if (ret == DEVICERESET)
+// 			{
+// 				restartapp();
+// 				break;
+// 			}
+// 			else if (ret == FORCEPATCH)
+// 			{
+// 
+// 			}
+// 		}
 	}
-
-	p->portinfo_list = list;
 }
+
+
 
 
 int main(int argc, char** argv) 

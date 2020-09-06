@@ -14,11 +14,14 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <fcntl.h>
+#include <string.h> 
+#include <utime.h>
+#include <sys/time.h>
 #include <string>
 #include <ctime>
 #include <deque>
 #include <vector>
-#include <string.h> 
 
 #include "memdb.h"
 #include "logger.h"
@@ -32,6 +35,10 @@ using namespace std;
 #include <gphoto2/gphoto2-camera.h>
 #include <gphoto2/gphoto2-abilities-list.h>
 #include <gphoto2/gphoto2-context.h>
+#include <gphoto2/gphoto2-port-log.h>
+#include <gphoto2/gphoto2-setting.h>
+#include <gphoto2/gphoto2-filesys.h>
+
 
 
 typedef struct _GPParams GPParams;
@@ -76,6 +83,20 @@ struct waitparams
 
 
 //////////////////////////////////////////////////////////////////////////
+
+// 카메라 최대 8개
+#define MAX_CAMERA	8
+
+// 카메라 상태
+enum CAMERA_STATE
+{
+	STATE_NONE,
+	STATE_CONNECTION,
+	STATE_READY,
+	STATE_FOCUSING,
+	STATE_SHOT,
+	STATE_DOWNLOAD,
+};
 
 
 //////////////////////////////////////////////////////////////////////////

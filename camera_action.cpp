@@ -1,13 +1,4 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <string.h>
-#include <string>
-#include <vector>
-#include <sys/time.h>
-#include <utime.h>
 
-#include "predef.h"
 #include "./camera_action.h"
 
 Camera_Action::Camera_Action()

@@ -78,6 +78,7 @@
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="camera_action.cpp" />
     <ClCompile Include="camera_context.cpp" />
+    <ClCompile Include="camera_thread.cpp" />
     <ClCompile Include="cam_controller.cpp" />
     <ClCompile Include="commander.cpp" />
     <ClCompile Include="logger.cpp" />
@@ -91,6 +92,7 @@
     <ClInclude Include="camera_action.h" />
     <ClInclude Include="camera_context.h" />
     <ClInclude Include="camera_info.h" />
+    <ClInclude Include="camera_thread.h" />
     <ClInclude Include="cam_controller.h" />
     <ClInclude Include="commander.h" />
     <ClInclude Include="include\gphoto2pp\button_widget.hpp" />
@@ -140,7 +142,7 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <LibraryDependencies>gphoto2;gphoto2_port;gphoto2pp;%(LibraryDependencies)</LibraryDependencies>
+      <LibraryDependencies>gphoto2;gphoto2_port;pthread;%(LibraryDependencies)</LibraryDependencies>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>./lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <SharedLibrarySearchPath>%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
@@ -157,7 +159,12 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Link>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LibraryDependencies>gphoto2;gphoto2_port;%(LibraryDependencies)</LibraryDependencies>
+      <LibraryDependencies>gphoto2;gphoto2_port;pthread;%(LibraryDependencies)</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <Link>
+      <LibraryDependencies>gphoto2;gphoto2_port;pthread;%(LibraryDependencies)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -123,6 +123,7 @@
     <ClInclude Include="socket.h" />
     <ClInclude Include="commander.h" />
     <ClInclude Include="CameraController.h" />
+    <ClInclude Include="camera_thread.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cam_controller.cpp" />
@@ -135,5 +136,6 @@
     <ClCompile Include="socket.cpp" />
     <ClCompile Include="commander.cpp" />
     <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="camera_thread.cpp" />
   </ItemGroup>
 </Project>
