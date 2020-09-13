@@ -20,7 +20,7 @@ void Logger::log(int logtype, const char* format, ...)
 	va_end(ap);
 
 	std::string ds = Utils::getCurrentDateTime();
-	ds = ds + buf;
+	ds = ds + buf + '\n';
 
 	if (filelog_enable)
 	{

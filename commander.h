@@ -2,11 +2,11 @@
 #define _COMMANDER_
 
 #include "predef.h"
-#include <deque>
+#include <vector>
 
 struct Command
 {
-	int	type;
+	//int	type;
 	char packet;
 	char data[SOCKET_BUFFER];
 
@@ -17,26 +17,14 @@ struct Command
 	}
 };
 
-
 class Commander
 {
 public :
-	static Commander * getinstance()
-	{
-		if (instance == NULL)
-			instance = new Commander();
-		return instance;
-	}
-
-	void	addcommand(int type, char packet, char *data, int datalen);
-	int		update();
-
-private :	
 	Commander();
 	~Commander();
-	
-	static Commander*	instance;
-	std::deque<Command>	commandlist;
+
+	void	addcommand(char packet, char *data, int datalen);
+	std::vector<Command>	commandlist;
 };
 
 

@@ -3,15 +3,13 @@
 
 #include "socket.h"
 
+class Commander;
+
 class Network
 {
 public :
-	static Network * getinstance()
-	{
-		if (instance == NULL)
-			instance = new Network();
-		return instance;
-	}
+	Network();
+	~Network();
 
 	void	init();
 	void	uninit();
@@ -22,18 +20,17 @@ public :
 	bool	write(char packet, char *data, int datasize);
 	bool	getenable() { return enable;  }
 
+	Commander *getcommander() { return commander; }
+
 private :
 	void	parsepacket(SocketBuffer *buffer);
-	int		getpackettype(char packet);
+	//int		getpackettype(char packet);
 
 private :
-	Network();
-	~Network();
-
-	static Network *	instance;
-
 	bool		enable;
-	Socket	*	socket;
+	Commander	*commander;
+	Socket		*socket;
+
 };
 
 

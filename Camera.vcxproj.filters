@@ -111,7 +111,6 @@
     <ClInclude Include="include\gphoto2pp\window_widget.hpp">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="cam_controller.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="predef.h" />
     <ClInclude Include="memdb.h" />
@@ -124,9 +123,9 @@
     <ClInclude Include="commander.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="camera_thread.h" />
+    <ClInclude Include="CameraManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cam_controller.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="memdb.cpp" />
     <ClCompile Include="logger.cpp" />
@@ -137,5 +136,6 @@
     <ClCompile Include="commander.cpp" />
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="camera_thread.cpp" />
+    <ClCompile Include="CameraManager.cpp" />
   </ItemGroup>
 </Project>

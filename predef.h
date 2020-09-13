@@ -84,6 +84,10 @@ struct waitparams
 
 //////////////////////////////////////////////////////////////////////////
 
+#define CAPTURE_TO_RAM			0 // "Internal RAM"
+#define CAPTURE_TO_SDCARD		1 // "Memory card"
+
+
 // 카메라 최대 8개
 #define MAX_CAMERA	8
 
@@ -113,9 +117,7 @@ enum CAMERA_STATE
 
 //#define I_AM_SERVER
 
-//////////////////////////////////////////////////////////////////////////
-
-// network packet
+//////////////////////////////////////////////////////////////////////////	network packet
 
 // response packet
 #define RESPONSE_OK		0x05
@@ -126,29 +128,36 @@ enum CAMERA_STATE
 #define CLIENT_LOG_WARN		0x0b
 #define CLIENT_LOG_ERR		0x0c
 
-// command packet
-#define FORCEPATCH			0x0A
-#define DEVICERESET			0x10		// 재시작
 
-#define	PLAYMOTION			0x20
+// Packet
+#define	PACKET_SHOT				0x10	// shot picture
+#define PACKET_HALFPRESS		0x20	// auto focus
 
-#define WHEEL_FORWARD		0x30
-#define WHEEL_BACKWARD		0x31
-#define WHEEL_STOP			0x32
-#define WHEEL_TURNLEFT		0x33
-#define WHEEL_TURNRIGHT		0x34
+#define PACKET_ISO				0x31
+#define PACKET_APERTURE			0x32
+#define PACKET_SHUTTERSPEED		0x33
 
-#define DISPLAY_PIC			0x40
+//////////////////////////////////////////////////////////////////////////
 
+enum CAMERA_PARAM
+{
+	ISO,
+	SHUTTERSPEED,
+	APERTURE
+};
 
-// Command type
-#define COMMAND_FORCEPATCH	0x0A	// force online patch and reset system
-#define COMMAND_DEVICE		0x10
-#define COMMAND_ANIMATION	0x20
-#define COMMAND_WHEEL		0x30
-#define COMMAND_DISPLAY		0x40
+#define ISO_VALUE				3	// 400
+#define SHUTTERSPEED_VALUE		36	// 1 / 100
+//#define SHUTTERSPEED_VALUE	46	// 1/1000
+#define APERTURE_VALUE			5	// 9
 
+/*
 
+#define ISO_VALUE				"400"
+#define SHUTTERSPEED_VALUE		"1/100"
+//#define SHUTTERSPEED_VALUE	46	// 1/1000
+#define APERTURE_VALUE			"9"
+*/
 
 
 

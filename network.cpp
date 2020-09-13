@@ -1,12 +1,11 @@
 ﻿#include "network.h"
 #include "commander.h"
 
-Network *	Network::instance = NULL;
-
 Network::Network()
 {
 	enable = false;
 	socket = NULL;
+	commander = NULL;
 }
 
 Network::~Network()
@@ -18,6 +17,8 @@ void	Network::init()
 {
 	socket = new Socket();
 	socket->init();
+
+	commander = new Commander();
 }
 
 void	Network::uninit()
@@ -25,6 +26,9 @@ void	Network::uninit()
 	socket->uninit();
 	delete socket;
 	socket = NULL;
+
+	delete commander;
+
 	enable = false;
 }
 
@@ -91,10 +95,11 @@ void	Network::parsepacket(SocketBuffer *buffer)
 {
 	int datasize = (int&)*(buffer->buffer);
 	char packet = (char&)*(buffer->buffer+sizeof(int));
-	int type = getpackettype(packet);
-	Commander::getinstance()->addcommand( type, packet, buffer->buffer + sizeof(int) + sizeof(char), datasize);
+
+	commander->addcommand(packet, buffer->buffer + sizeof(int) + sizeof(char), datasize);
 }
 
+/*
 int	Network::getpackettype(char packet)
 {
 	int type = COMMAND_ANIMATION;
@@ -126,4 +131,4 @@ int	Network::getpackettype(char packet)
 	}
 
 	return type;
-}
+}*/

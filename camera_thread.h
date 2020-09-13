@@ -5,7 +5,8 @@
 #include "predef.h"
 
 class Network;
-class Camera_Context;
+class CameraController;
+class Command;
 
 class CameraThread
 {
@@ -16,15 +17,20 @@ public :
 	void Start(int camnum);
 	static void* thread_fn(void* arg);
 
-private:
-	static void Update(int camnum);
+	void addTestPacket(char packet, int camnum);
 
-	Camera_Context* camera;
+private:
+	static void Update(int camnum, CameraController* camera);
+	static int UpdateCommand(int camnum, CameraController* camera);
+
 	pthread_t		threadid;
 
+	static Command command[MAX_CAMERA];
 	static Network network[MAX_CAMERA];
 	static CAMERA_STATE camera_state[MAX_CAMERA];
 	static bool exitthread[MAX_CAMERA];
+
+
 	static pthread_mutex_t mutex_lock[MAX_CAMERA];
 	static pthread_mutex_t exitmutex_lock[MAX_CAMERA];
 };

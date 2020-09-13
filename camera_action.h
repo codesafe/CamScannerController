@@ -1,7 +1,8 @@
+#if 0
+
 #pragma once
 
 #include "predef.h"
-
 
 class Camera_Action
 {
@@ -19,7 +20,7 @@ public:
 	int action_camera_wait_event(GPParams* p, const char* arg);
 
 	// half press
-	int action_camera_wait_focus(GPParams* p);
+	int action_camera_wait_focus(GPParams* p, int sec);
 
 	int get_port_list(GPParams* p);
 
@@ -32,3 +33,7 @@ private:
 	void _get_portinfo_list(GPParams* p);
 	//CameraAbilitiesList* gp_params_abilities_list(GPParams* p);
 };
+
+
+
+#endif

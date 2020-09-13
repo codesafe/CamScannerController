@@ -1,13 +1,14 @@
+#if 0
 
 #include "./camera_action.h"
 
 Camera_Action::Camera_Action()
 {
 }
+
 Camera_Action::~Camera_Action()
 {
 }
-
 
 int Camera_Action::get_all_config(GPParams* p)
 {
@@ -720,24 +721,17 @@ int Camera_Action::action_camera_wait_event(GPParams* p, const char* arg)
 
 
 
-int Camera_Action::action_camera_wait_focus(GPParams* p)
+int Camera_Action::action_camera_wait_focus(GPParams* p, int sec)
 {
 	int ret;
-	struct waitparams wp;
 	CameraEventType	event;
 	void* data = NULL;
+	int leftoverms = sec*1000;
 
-	wp.type = WAIT_EVENTS;
-	wp.u.events = 1000000;
-
+	int cc = 0;
 	bool loop = true;
-
 	while (loop)
 	{
-		int leftoverms = 10000;
-		struct timeval	ytime;
-		int		x, exitloop;
-
 		data = NULL;
 		ret = gp_camera_wait_for_event(p->camera, leftoverms, &event, &data, p->context);
 
@@ -753,6 +747,7 @@ int Camera_Action::action_camera_wait_focus(GPParams* p)
 					if (strstr((char*)data, "CTGInfoCheckComplete") != NULL)
 					{
 						loop = false;
+						printf("FOCUS Done\n");
 					}
 				}
 				else
@@ -762,13 +757,19 @@ int Camera_Action::action_camera_wait_focus(GPParams* p)
 				break;
 
 			case GP_EVENT_TIMEOUT:
-				printf("TIMEOUT\n");
-				free(data);
+				{
+					printf("TIMEOUT\n");
+					free(data);
+				}
 				return GP_ERROR;
+
+			default:
+				printf("????? %d\n", event);
 				break;
 		}
-
 		free(data);
+
+		printf("Focus loop %d\n", cc++);
 	}
 	return GP_OK;
 }
@@ -851,3 +852,5 @@ int Camera_Action::get_port_list(GPParams* gp_params)
 
 	return GP_OK;
 }
+
+#endif

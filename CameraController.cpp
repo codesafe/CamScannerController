@@ -11,112 +11,134 @@
 
 #include "utils.h"
 
-using namespace CameraControllerApi;
 using namespace std;
 
 
-
-CameraController* CameraController::_instance = NULL;
-
-CameraController* CameraController::getInstance()
-{
-    if(_instance == NULL)
-        _instance = new CameraController();
-
-
-    return _instance;
-}
-
 void CameraController::release()
 {
-    if(_instance != NULL)
-	{
-        gp_camera_exit(_instance->_camera, _instance->_ctx);
-        delete _instance;
-    }
-
-    _instance = NULL;
-
+	gp_camera_exit(_camera, _context);
 }
 
-
-CameraController::CameraController() :
-		_camera_found(false), _is_busy(false), _is_initialized(false),
-		_liveview_running(false), _camera(NULL), _ctx(NULL), _save_images(true)
+CameraController::CameraController()
 {
-    this->init();
+	_camera_found = false;
+	_is_busy = false;
+	_is_initialized = false;
+	_liveview_running = false;
+	_camera = NULL;
+	_context = NULL;
+	_save_images = true;
+
+// 	iso = ISO_VALUE;
+// 	shutterspeed = SHUTTERSPEED_VALUE;
+// 	aperture = APERTURE_VALUE;
+
+	iso = "1600";
+	shutterspeed = "1/60";
+	aperture = "5";
 }
 
 void CameraController::init()
 {
-    if(!this->_camera_found)
+    if(!_camera_found)
 	{
-//         this->_init_camera();
-//         Settings *s = Settings::getInstance();
-//         string val = "";
-//         s->get_value("general.save_images", val);
-// 
-//         if(val.compare("TRUE") == 0 || val.compare("true") == 0)
-//             this->_save_images = true;
-//         else
-//             this->_save_images = false;
+         _init_camera();
 
-
-        //if(this->_save_images && this->_camera_found)
-        //    this->_set_capturetarget(1);
+        if(_save_images && _camera_found)
+            _set_capturetarget(CAPTURE_TO_RAM);
     }
+}
+
+void CameraController::setPort(string port)
+{
+	GPPortInfoList* portinfo_list;
+	char verified_port[64] = { 0, };
+	strcpy(verified_port, port.c_str());
+
+	GPPortInfo portinfo;
+	if (gp_port_info_list_new(&portinfo_list) < GP_OK)
+	{
+		Logger::log(0, "Error gp_port_info_list_new");
+		return;
+	}
+
+	int result = gp_port_info_list_load(portinfo_list);
+	if (result < 0)
+	{
+		Logger::log(0, "Error gp_port_info_list_load");
+		gp_port_info_list_free(portinfo_list);
+		return;
+	}
+
+	int p = gp_port_info_list_lookup_path(portinfo_list, verified_port);
+	if (p < GP_OK)
+	{
+		Logger::log(0, "Error gp_port_info_list_lookup_path : %d", p);
+		return;
+	}
+
+	int r = gp_port_info_list_get_info(portinfo_list, p, &portinfo);
+	if (r < GP_OK)
+	{
+		Logger::log(0, "Error gp_port_info_list_get_info : %d", r);
+		return;
+	}
+
+	gp_camera_set_port_info(_camera, portinfo);
+
+	gp_port_info_list_free(portinfo_list);
 }
 
 void CameraController::_init_camera()
 {
-    gp_camera_new(&this->_camera);
-    this->_ctx = gp_context_new();
-    gp_context_set_error_func(this->_ctx, (GPContextErrorFunc)CameraController::_error_callback, NULL);
-    gp_context_set_message_func(this->_ctx, (GPContextMessageFunc)CameraController::_message_callback, NULL);
+    gp_camera_new(&_camera);
+    _context = gp_context_new();
+    gp_context_set_error_func(_context, (GPContextErrorFunc)CameraController::_error_callback, NULL);
+    gp_context_set_message_func(_context, (GPContextMessageFunc)CameraController::_message_callback, NULL);
 
-    int ret = gp_camera_init(this->_camera, this->_ctx);
+    int ret = gp_camera_init(_camera, _context);
     if(ret < GP_OK)
 	{
-        gp_camera_free(this->_camera);
+        gp_camera_free(_camera);
     } 
 	else 
 	{
-        this->_camera_found = true;
+        _camera_found = true;
     }
-    this->_is_initialized = true;
+    _is_initialized = true;
 }
 
 CameraController::~CameraController()
 {
-    gp_camera_exit(this->_camera, this->_ctx);
-    gp_context_unref(this->_ctx);
+    gp_camera_exit(_camera, _context);
+    gp_context_unref(_context);
 }
 
 
 bool CameraController::is_busy()
 {
-    return this->_is_busy;
+    return _is_busy;
 }
 
 void CameraController::is_bussy(bool busy)
 {
-    this->_is_busy = busy;
+    _is_busy = busy;
 }
 
 bool CameraController::camera_found()
 {
-    return this->_camera_found;
+    return _camera_found;
 }
 
 bool CameraController::is_initialized()
 {
-    return this->_is_initialized;
+    return _is_initialized;
 }
 
-int CameraController::capture(const char *filename, string &data)
+int CameraController::capture(const char *filename)
 {
-    this->_is_busy = true;
-/*
+    _is_busy = true;
+
     int ret, fd ;
     CameraFile *file;
     CameraFilePath path;
@@ -124,12 +146,13 @@ int CameraController::capture(const char *filename, string &data)
     strcpy(path.folder, "/");
 	strcpy(path.name, filename);
 
-	ret = gp_camera_capture(this->_camera, GP_CAPTURE_IMAGE, &path, this->_ctx);
+	ret = gp_camera_capture(_camera, GP_CAPTURE_IMAGE, &path, _context);
     if (ret != GP_OK)
         return ret;
 
 
-    if(this->_save_images == false){
+    if(_save_images == false)
+	{
         ret = gp_file_new(&file);
     } else {
         fd  = open(filename, O_CREAT | O_RDWR, 0644);
@@ -137,25 +160,23 @@ int CameraController::capture(const char *filename, string &data)
     }
 
     if (ret != GP_OK){
-        this->_is_busy = false;
+        _is_busy = false;
         return ret;
     }
 
-	ret = gp_camera_file_get(this->_camera, path.folder, path.name, GP_FILE_TYPE_NORMAL, file, this->_ctx);
+	ret = gp_camera_file_get(_camera, path.folder, path.name, GP_FILE_TYPE_NORMAL, file, _context);
 
     if (ret != GP_OK){
-        this->_is_busy = false;
+        _is_busy = false;
         return ret;
     }
 
-    this->_file_to_base64(file, data);
-
-    if(this->_save_images == false)
+    if(_save_images == false)
 	{
-        ret = gp_camera_file_delete(this->_camera, path.folder, path. name, this->_ctx);
+        ret = gp_camera_file_delete(_camera, path.folder, path. name, _context);
 
         if (ret != GP_OK){
-            this->_is_busy = false;
+            _is_busy = false;
             return ret;
         }
     }
@@ -165,9 +186,9 @@ int CameraController::capture(const char *filename, string &data)
     CameraEventType type;
     void *eventdata;
 
-    while(1) {
-
-        gp_camera_wait_for_event(this->_camera, waittime, &type, &eventdata, this->_ctx);
+    while(1) 
+	{
+        gp_camera_wait_for_event(_camera, waittime, &type, &eventdata, _context);
 
         if(type == GP_EVENT_TIMEOUT) {
             break;
@@ -181,12 +202,279 @@ int CameraController::capture(const char *filename, string &data)
     }
     
     gp_file_free(file);
-*/
 
-    this->_is_busy = false;
+
+    _is_busy = false;
     return true;
 }
 
+
+int CameraController::get_settings_choices(const char* key, vector<string>& choices)
+{
+	_is_busy = true;
+	CameraWidget* w, * child;
+	int ret;
+
+	ret = gp_camera_get_config(_camera, &w, _context);
+	if (ret < GP_OK) {
+		_is_busy = false;
+		return ret;
+	}
+
+	ret = gp_widget_get_child_by_name(w, key, &child);
+	if (ret < GP_OK)
+	{
+		_is_busy = false;
+		return ret;
+	}
+
+	int count = gp_widget_count_choices(child);
+	for (int i = 0; i < count; i++) {
+		const char* choice;
+		ret = gp_widget_get_choice(child, i, &choice);
+
+		if (ret < GP_OK)
+		{
+			_is_busy = false;
+			return ret;
+		}
+
+		choices.push_back(string(choice));
+	}
+	_is_busy = false;
+	return true;
+}
+
+int CameraController::get_settings_value(const char* key, string& val)
+{
+	_is_busy = true;
+	CameraWidget* w, * child;
+	int ret;
+
+	ret = gp_camera_get_config(_camera, &w, _context);
+	if (ret < GP_OK)
+	{
+		_is_busy = false;
+		return ret;
+	}
+
+	ret = gp_widget_get_child_by_name(w, key, &child);
+	if (ret < GP_OK)
+	{
+		_is_busy = false;
+		return ret;
+	}
+
+	void* item_value;
+	ret = gp_widget_get_value(child, &item_value);
+	if (ret < GP_OK)
+	{
+		_is_busy = false;
+		return ret;
+	}
+
+	unsigned char* value = static_cast<unsigned char*>(item_value);
+	val.append((char*)value);
+
+	_is_busy = false;
+	return true;
+}
+
+int CameraController::set_settings_value(const char* key, const char* val)
+{
+	_is_busy = true;
+	CameraWidget* w, * child;
+	int ret = gp_camera_get_config(_camera, &w, _context);
+	if (ret < GP_OK)
+	{
+		_is_busy = false;
+		return false;
+	}
+
+	ret = gp_widget_get_child_by_name(w, key, &child);
+	if (ret < GP_OK)
+	{
+		_is_busy = false;
+		return false;
+	}
+
+	ret = gp_widget_set_value(child, val);
+	if (ret < GP_OK)
+	{
+		_is_busy = false;
+		return false;
+	}
+
+
+	ret = gp_camera_set_config(_camera, w, _context);
+	if (ret < GP_OK)
+	{
+		_is_busy = false;
+		return false;
+	}
+	gp_widget_free(w);
+
+	_is_busy = false;
+	return (ret == GP_OK);
+}
+
+int CameraController::set_settings_value(const char* key, int val)
+{
+	_is_busy = true;
+	CameraWidget* w, * child;
+	int ret = gp_camera_get_config(_camera, &w, _context);
+	if (ret < GP_OK)
+	{
+		_is_busy = false;
+		return false;
+	}
+
+	ret = gp_widget_get_child_by_name(w, key, &child);
+	if (ret < GP_OK)
+	{
+		_is_busy = false;
+		return false;
+	}
+
+	ret = gp_widget_set_value(child, &val);
+	if (ret != GP_OK)
+	{
+		_is_busy = false;
+		return false;
+	}
+
+
+	ret = gp_camera_set_config(_camera, w, _context);
+	if (ret < GP_OK)
+	{
+		_is_busy = false;
+		return false;
+	}
+
+	gp_widget_free(w);
+
+	_is_busy = false;
+	return (ret == GP_OK);
+}
+
+/**
+ borrowed gphoto2
+ http://sourceforge.net/p/gphoto/code/HEAD/tree/trunk/gphoto2/gphoto2/main.c#l834
+ */
+int CameraController::_wait_and_handle_event(useconds_t waittime, CameraEventType* type, int download)
+{
+	int 		result;
+	CameraEventType	evtype;
+	void* data;
+	CameraFilePath* path;
+
+	if (!type) type = &evtype;
+	evtype = GP_EVENT_UNKNOWN;
+	data = NULL;
+	result = gp_camera_wait_for_event(_camera, waittime, type, &data, _context);
+	if (result == GP_ERROR_NOT_SUPPORTED)
+	{
+		*type = GP_EVENT_TIMEOUT;
+		//usleep(waittime*1000);
+		Utils::Sleep(waittime * 1000);
+		return GP_OK;
+	}
+
+	if (result != GP_OK)
+		return result;
+	path = (CameraFilePath*)data;
+	switch (*type) {
+	case GP_EVENT_TIMEOUT:
+		break;
+	case GP_EVENT_CAPTURE_COMPLETE:
+		break;
+	case GP_EVENT_FOLDER_ADDED:
+		free(data);
+		break;
+	case GP_EVENT_FILE_ADDED:
+		//result = save_captured_file (path, download);
+		free(data);
+		/* result will fall through to final return */
+		break;
+	case GP_EVENT_UNKNOWN:
+		free(data);
+		break;
+	default:
+		break;
+	}
+	return result;
+}
+
+void CameraController::_set_capturetarget(int index)
+{
+	std::vector<string> choices;
+
+	int ret;
+	ret = get_settings_choices("capturetarget", choices);
+
+	for (int i = 0; i < choices.size(); i++)
+	{
+		printf("Store type : %s\n", choices[i].c_str());
+	}
+
+	if (ret && index < choices.size())
+	{
+		string choice = choices.at(index);
+		set_settings_value("capturetarget", choice.c_str());
+	}
+
+}
+
+GPContextErrorFunc CameraController::_error_callback(GPContext* context, const char* text, void* data) {
+
+	return 0;
+}
+
+GPContextMessageFunc CameraController::_message_callback(GPContext* context, const char* text, void* data) {
+
+	return 0;
+}
+
+// 아래의 param 셋팅
+void CameraController::apply_essential_param_param()
+{
+	int ret = set_settings_value("iso", iso.c_str());					// "400"
+	if (ret != GP_OK)
+	{
+		Logger::log(0, "Error set_settings_value iso : %s", iso.c_str());
+		return;
+	}
+
+	ret = set_settings_value("aperture", aperture.c_str());				// "10"
+	if (ret != GP_OK)
+	{
+		Logger::log(0, "Error set_settings_value aperture : %s", aperture.c_str());
+		return;
+	}
+
+	ret = set_settings_value("shutterspeed", shutterspeed.c_str());		// "1/100"
+	if (ret != GP_OK)
+	{
+		Logger::log(0, "Error set_settings_value shutterspeed : %s", shutterspeed.c_str());
+		return;
+	}
+}
+
+void CameraController::set_essential_param(CAMERA_PARAM param, string value)
+{
+	switch (param)
+	{
+	case ISO:
+		iso = value;
+		break;
+	case SHUTTERSPEED:
+		shutterspeed = value;
+		break;
+	case APERTURE:
+		aperture = value;
+		break;
+	}
+}
 
 /*
 
@@ -227,6 +515,7 @@ int CameraController::preview(const char **file_data)
     return static_cast<int>(file_size);
 }
 */
+
 /*
 
 int CameraController::bulb(const char *filename, string &data){
@@ -268,6 +557,7 @@ int CameraController::bulb(const char *filename, string &data){
     return true;
 }
 */
+
 /*
 
 int CameraController::get_file(const char *filename, const char *filepath, string &base64out){
@@ -303,6 +593,7 @@ int CameraController::get_files(ptree &tree)
     return ret;
 }
 */
+
 /*
 
 int CameraController::_get_files(ptree &tree, const char *path){
@@ -432,170 +723,6 @@ int CameraController::get_settings(ptree &sett)
     return true;
 }*/
 
-int CameraController::get_settings_choices(const char *key, vector<string> &choices)
-{
-    this->_is_busy = true;
-    CameraWidget *w, *child;
-    int ret;
-
-    ret = gp_camera_get_config(this->_camera, &w, this->_ctx);
-    if(ret < GP_OK){
-        this->_is_busy = false;
-        return ret;
-    }
-
-    ret = gp_widget_get_child_by_name(w, key, &child);
-    if(ret < GP_OK){
-        this->_is_busy = false;
-        return ret;
-    }
-
-    int count = gp_widget_count_choices(child);
-    for(int i = 0; i < count; i++){
-        const char *choice;
-        ret = gp_widget_get_choice(child, i, &choice);
-
-        if(ret < GP_OK){
-            this->_is_busy = false;
-            return ret;
-        }
-
-        choices.push_back(string(choice));
-    }
-    this->_is_busy = false;
-    return true;
-}
-
-int CameraController::get_settings_value(const char *key, string &val)
-{
-    this->_is_busy = true;
-    CameraWidget *w, *child;
-    int ret;
-
-    ret = gp_camera_get_config(this->_camera, &w, this->_ctx);
-    if(ret < GP_OK){
-        this->_is_busy = false;
-        return ret;
-    }
-
-    ret = gp_widget_get_child_by_name(w, key, &child);
-    if(ret < GP_OK){
-        this->_is_busy = false;
-        return ret;
-    }
-
-    void *item_value;
-    ret = gp_widget_get_value(child, &item_value);
-    if(ret < GP_OK){
-        this->_is_busy = false;
-        return ret;
-    }
-
-    unsigned char *value = static_cast<unsigned char *>(item_value);
-    val.append((char *)value);
-
-    this->_is_busy = false;
-    return true;
-}
-
-int CameraController::set_settings_value(const char *key, const char *val)
-{
-    this->_is_busy = true;
-    CameraWidget *w, *child;
-    int ret = gp_camera_get_config(this->_camera, &w, this->_ctx);
-    if(ret < GP_OK){
-        this->_is_busy = false;
-        return false;
-    }
-
-    ret = gp_widget_get_child_by_name(w, key, &child);
-    if(ret < GP_OK){
-        this->_is_busy = false;
-        return false;
-    }
-
-    ret = gp_widget_set_value(child, val);
-    if(ret < GP_OK){
-        this->_is_busy = false;
-        return false;
-    }
-
-
-    ret = gp_camera_set_config(this->_camera, w, this->_ctx);
-    if(ret < GP_OK){
-        this->_is_busy = false;
-        return false;
-    }
-    gp_widget_free(w);
-
-    this->_is_busy = false;
-    return (ret == GP_OK);
-}
-
-
-/**
- borrowed gphoto2
- http://sourceforge.net/p/gphoto/code/HEAD/tree/trunk/gphoto2/gphoto2/main.c#l834
- */
-int CameraController::_wait_and_handle_event (useconds_t waittime, CameraEventType *type, int download) {
-	int 		result;
-	CameraEventType	evtype;
-	void		*data;
-	CameraFilePath	*path;
-
-	if (!type) type = &evtype;
-	evtype = GP_EVENT_UNKNOWN;
-	data = NULL;
-	result = gp_camera_wait_for_event(this->_camera, waittime, type, &data, this->_ctx);
-	if (result == GP_ERROR_NOT_SUPPORTED) 
-	{
-		*type = GP_EVENT_TIMEOUT;
-		//usleep(waittime*1000);
-		Utils::Sleep(waittime * 1000);
-		return GP_OK;
-	}
-
-	if (result != GP_OK)
-		return result;
-	path = (CameraFilePath*)data;
-	switch (*type) {
-        case GP_EVENT_TIMEOUT:
-            break;
-        case GP_EVENT_CAPTURE_COMPLETE:
-            break;
-        case GP_EVENT_FOLDER_ADDED:
-            free (data);
-            break;
-        case GP_EVENT_FILE_ADDED:
-            //result = save_captured_file (path, download);
-            free (data);
-            /* result will fall through to final return */
-            break;
-        case GP_EVENT_UNKNOWN:
-            free (data);
-            break;
-        default:
-            break;
-	}
-	return result;
-}
-
-/*
-void CameraController::_set_capturetarget(int index)
-{
-    vector<string> choices;
-
-    int ret;
-    ret = this->get_settings_choices("capturetarget", choices);
-
-    if(ret && index < choices.size()){
-        string choice = choices.at(index);
-        this->set_settings_value("capturetarget", choice.c_str());
-    }
-
-}
-
-*/
 
 /*
 void CameraController::_read_widget(CameraWidget *w,  ptree &tree, string node)
@@ -686,40 +813,4 @@ void CameraController::_get_item_value(CameraWidget *w, ptree &tree)
 }
 */
 
-/*
 
-int CameraController::_file_to_base64(CameraFile *file, string &output)
-{
-    int ret;
-    unsigned long int file_size = 0;
-    const char *file_data = NULL;
-
-	ret = gp_file_get_data_and_size (file, &file_data, &file_size);
-    if (ret != GP_OK)
-        return ret;
-
-    const char *m;
-    ret = gp_file_get_mime_type(file, &m);
-    
-    std::string mime(m);
-    cout << "mime: " << mime << std::endl;
-    if(mime.compare("image/jpeg") == 0) {
-        std::string img(file_data, file_size);
-        Helper::to_base64(&img, output);
-    } else {
-        Helper::get_image_from_exif(file_data, file_size, output);
-    }
-    return true;
-}
-*/
-
-
-GPContextErrorFunc CameraController::_error_callback(GPContext *context, const char *text, void *data){
-
-    return 0;
-}
-
-GPContextMessageFunc CameraController::_message_callback(GPContext *context, const char *text, void *data){
-
-    return 0;
-}
