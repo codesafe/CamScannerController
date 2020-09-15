@@ -111,7 +111,7 @@ enum CAMERA_STATE
 #define PATCHSERVER_ADD		"http://127.0.0.1:8000/patch/patch.xml"
 #define PATCHFILENAME		"patch.xml"
 
-#define SERVER_ADD			"127.0.0.1"
+#define SERVER_ADD			"192.168.29.103"
 #define SERVER_PORT			8888
 #define SOCKET_BUFFER		4096
 

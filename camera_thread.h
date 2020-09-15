@@ -20,13 +20,15 @@ public :
 	void addTestPacket(char packet, int camnum);
 
 private:
-	static void Update(int camnum, CameraController* camera);
-	static int UpdateCommand(int camnum, CameraController* camera);
+	static void Update(int camnum);
+	static int UpdateCommand(int camnum);
 
 	pthread_t		threadid;
 
 	static Command command[MAX_CAMERA];
 	static Network network[MAX_CAMERA];
+	static CameraController* cameras[MAX_CAMERA];
+
 	static CAMERA_STATE camera_state[MAX_CAMERA];
 	static bool exitthread[MAX_CAMERA];
 

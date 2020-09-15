@@ -12,7 +12,9 @@
 
 Command CameraThread::command[MAX_CAMERA];
 Network CameraThread::network[MAX_CAMERA];
+CameraController* CameraThread::cameras[MAX_CAMERA];
 CAMERA_STATE CameraThread::camera_state[MAX_CAMERA];
+
 bool CameraThread::exitthread[MAX_CAMERA];
 pthread_mutex_t CameraThread::mutex_lock[MAX_CAMERA];
 pthread_mutex_t CameraThread::exitmutex_lock[MAX_CAMERA];
@@ -40,7 +42,12 @@ void* CameraThread::thread_fn(void* arg)
 {
 	int camnum = (int)arg;
 	CameraController* camera = CameraMan::getInstance()->getCamera(camnum);
+	cameras[camnum] = camera;
+
 	network[camnum].init();
+	bool ret = network[camnum].connect();
+	if (ret == true)
+		camera_state[camnum] = CAMERA_STATE::STATE_READY;
 
 	while (true)
 	{
@@ -62,7 +69,7 @@ void* CameraThread::thread_fn(void* arg)
 			pthread_mutex_lock(&mutex_lock[camnum]);
 
 			// 네트웍 업데이트 / 명령어 처리
-			Update(camnum, camera);
+			Update(camnum);
 
 			pthread_mutex_unlock(&mutex_lock[camnum]);
 		}
@@ -75,10 +82,10 @@ void* CameraThread::thread_fn(void* arg)
 	return((void*)0);
 }
 
-void CameraThread::Update(int camnum, CameraController* camera)
+void CameraThread::Update(int camnum)
 {
 	// 쌓여 있는 커맨드가 있으면 여기에서 처리한다.
-	UpdateCommand(camnum, camera);
+	UpdateCommand(camnum);
 
 /*
 	switch (camera_state[camnum])
@@ -108,7 +115,7 @@ void CameraThread::Update(int camnum, CameraController* camera)
 	network[camnum].update();
 }
 
-int	CameraThread::UpdateCommand(int camnum, CameraController* camera)
+int	CameraThread::UpdateCommand(int camnum)
 {
 	int ret = 0;
 	Commander* commander = network[camnum].getcommander();
@@ -127,8 +134,8 @@ int	CameraThread::UpdateCommand(int camnum, CameraController* camera)
 				// 					ret = PartController::getInstance()->addsendqueuecommand(lwheelid, MOVE_SPEED, param);
 
 				// 포커스 
-				camera->apply_essential_param_param();
-				camera->set_settings_value("eosremoterelease", "Press 1");
+				cameras[camnum]->apply_essential_param_param();
+				cameras[camnum]->set_settings_value("eosremoterelease", "Press 1");
 				printf("End action_camera_wait_focus : %d\n", ret);
 			}
 			break;
@@ -137,7 +144,7 @@ int	CameraThread::UpdateCommand(int camnum, CameraController* camera)
 			{
 				// 찍어
 				string name = Utils::format_string("name-%d.jpg", camnum);
-				int ret = camera->capture(name.c_str());
+				int ret = cameras[camnum]->capture(name.c_str());
 				printf("Shot : %d\n", camnum);
 			}
 			break;
@@ -146,7 +153,7 @@ int	CameraThread::UpdateCommand(int camnum, CameraController* camera)
 			{
 				//int value = (int&)*(it->data);
 				string value = it->data;
-				camera->set_essential_param(CAMERA_PARAM::ISO, value);
+				cameras[camnum]->set_essential_param(CAMERA_PARAM::ISO, value);
 			}
 			break;
 
@@ -154,7 +161,7 @@ int	CameraThread::UpdateCommand(int camnum, CameraController* camera)
 			{
 				//int value = (int&)*(it->data);
 				string value = it->data;
-				camera->set_essential_param(CAMERA_PARAM::APERTURE, value);
+				cameras[camnum]->set_essential_param(CAMERA_PARAM::APERTURE, value);
 			}
 			break;
 
@@ -162,7 +169,7 @@ int	CameraThread::UpdateCommand(int camnum, CameraController* camera)
 			{
 				//int value = (int&)*(it->data);
 				string value = it->data;
-				camera->set_essential_param(CAMERA_PARAM::SHUTTERSPEED, value);
+				cameras[camnum]->set_essential_param(CAMERA_PARAM::SHUTTERSPEED, value);
 			}
 			break;
 		}

@@ -43,12 +43,13 @@ int getch(void)
 
 int main(int argc, char** argv)
 {
-	CameraMan::getInstance()->enumCameraList();
 
 	int	retval;
 	std::vector<CameraThread*> threadlist;
-	int len = CameraMan::getInstance()->getEnumCameraNum();
+/*
+	CameraMan::getInstance()->enumCameraList();
 
+	int len = CameraMan::getInstance()->getEnumCameraNum();
 
 	for (int i = 0; i < len; i++)
 	{
@@ -56,6 +57,10 @@ int main(int argc, char** argv)
 		thread->Start(i);
 		threadlist.push_back(thread);
 	}
+*/
+
+	CameraThread* thread = new CameraThread();
+	thread->Start(0);
 
 	while (true)
 	{
