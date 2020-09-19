@@ -81,6 +81,24 @@ struct waitparams
 	enum download_type downloadtype;
 };
 
+//////////////////////////////////////////////////////////////////////////
+
+#include <curl/curl.h>
+
+struct WriteThis
+{
+	char* readptr;
+	size_t totalsize;
+	size_t sizeleft;
+
+	WriteThis()
+	{
+		readptr = NULL;
+		totalsize = 0;
+		sizeleft = 0;
+	}
+};
+
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -99,8 +117,10 @@ enum CAMERA_STATE
 	STATE_READY,
 	STATE_FOCUSING,
 	STATE_SHOT,
-	STATE_DOWNLOAD,
+	STATE_UPLOAD,
+	STATE_UPLOADING,
 };
+
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -136,6 +156,8 @@ enum CAMERA_STATE
 #define PACKET_ISO				0x31
 #define PACKET_APERTURE			0x32
 #define PACKET_SHUTTERSPEED		0x33
+
+#define PACKET_FORCE_UPLOAD		0x40	// for test
 
 //////////////////////////////////////////////////////////////////////////
 

@@ -43,12 +43,14 @@ int getch(void)
 
 int main(int argc, char** argv)
 {
+	CURLcode res;
+	res = curl_global_init(CURL_GLOBAL_DEFAULT);
+
 
 	int	retval;
 	std::vector<CameraThread*> threadlist;
-/*
-	CameraMan::getInstance()->enumCameraList();
 
+	CameraMan::getInstance()->enumCameraList();
 	int len = CameraMan::getInstance()->getEnumCameraNum();
 
 	for (int i = 0; i < len; i++)
@@ -57,10 +59,11 @@ int main(int argc, char** argv)
 		thread->Start(i);
 		threadlist.push_back(thread);
 	}
-*/
 
-	CameraThread* thread = new CameraThread();
-	thread->Start(0);
+
+// 	CameraThread* thread = new CameraThread();
+// 	thread->Start(0);
+// 	threadlist.push_back(thread);
 
 	while (true)
 	{
@@ -83,7 +86,16 @@ int main(int argc, char** argv)
 				threadlist[i]->addTestPacket(PACKET_SHOT, i);
 			}
 		}
+		else if (i == '3')
+		{
+			for (int i = 0; i < threadlist.size(); i++)
+			{
+				threadlist[i]->addTestPacket(PACKET_FORCE_UPLOAD, i);
+			}
+		}
 	}
+
+	curl_global_cleanup();
 
 	return 0;
 }

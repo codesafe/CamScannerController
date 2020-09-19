@@ -23,6 +23,9 @@ private:
 	static void Update(int camnum);
 	static int UpdateCommand(int camnum);
 
+	static void StartUpload(int camnum);
+	static size_t read_callback(void* ptr, size_t size, size_t nmemb, void* userp);
+
 	pthread_t		threadid;
 
 	static Command command[MAX_CAMERA];
