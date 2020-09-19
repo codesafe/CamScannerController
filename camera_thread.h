@@ -35,9 +35,11 @@ private:
 	static CAMERA_STATE camera_state[MAX_CAMERA];
 	static bool exitthread[MAX_CAMERA];
 
-
 	static pthread_mutex_t mutex_lock[MAX_CAMERA];
 	static pthread_mutex_t exitmutex_lock[MAX_CAMERA];
+
+	static int upload_progress[MAX_CAMERA];
+
 };
 
 

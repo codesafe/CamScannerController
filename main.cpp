@@ -71,8 +71,14 @@ int main(int argc, char** argv)
 
 		int i = getch();
 		printf("Input = %d\n", i);
-
-		if (i == '1')
+		if (i == '0')
+		{
+			for (int i = 0; i < threadlist.size(); i++)
+			{
+				threadlist[i]->addTestPacket(PACKET_TRY_CONNECT, i);
+			}
+		}
+		else if (i == '1')
 		{
 			for (int i = 0; i < threadlist.size(); i++)
 			{

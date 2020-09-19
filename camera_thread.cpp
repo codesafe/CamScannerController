@@ -18,6 +18,8 @@ CAMERA_STATE CameraThread::camera_state[MAX_CAMERA];
 bool CameraThread::exitthread[MAX_CAMERA];
 pthread_mutex_t CameraThread::mutex_lock[MAX_CAMERA];
 pthread_mutex_t CameraThread::exitmutex_lock[MAX_CAMERA];
+int CameraThread::upload_progress[MAX_CAMERA];
+
 
 CameraThread::CameraThread()
 {
@@ -29,8 +31,8 @@ CameraThread::~CameraThread()
 
 void CameraThread::Start(int camnum)
 {
-	//camera_state[camnum] = CAMERA_STATE::STATE_CONNECTION;
-	camera_state[camnum] = CAMERA_STATE::STATE_READY;
+	camera_state[camnum] = CAMERA_STATE::STATE_CONNECTION;
+	//camera_state[camnum] = CAMERA_STATE::STATE_READY;
 
 	pthread_mutex_init(&mutex_lock[camnum], NULL);
 	pthread_mutex_init(&exitmutex_lock[camnum], NULL);
@@ -113,6 +115,14 @@ void CameraThread::Update(int camnum)
 			break;
 
 		case CAMERA_STATE::STATE_UPLOADING:
+			{
+				if (upload_progress[camnum] == 100)
+				{
+					char data[10];
+					network[camnum].write(PACKET_UPLOAD_DONE, data, 10);
+				}
+
+			}
 			break;
 	}
 
@@ -132,6 +142,10 @@ int	CameraThread::UpdateCommand(int camnum)
 	{
 		switch (it->packet)
 		{
+			case PACKET_TRY_CONNECT:
+				camera_state[camnum] = CAMERA_STATE::STATE_CONNECTION;
+				break;
+
 			case PACKET_HALFPRESS:
 			{
 				// 					int p = (int&)*(it->data);
@@ -151,6 +165,7 @@ int	CameraThread::UpdateCommand(int camnum)
 				string name = Utils::format_string("name-%d.jpg", camnum);
 				int ret = cameras[camnum]->capture(name.c_str());
 				printf("Shot : %d\n", camnum);
+				camera_state[camnum] = CAMERA_STATE::STATE_UPLOAD;
 			}
 			break;
 
@@ -227,9 +242,11 @@ void CameraThread::StartUpload(int camnum)
 	fread(inbuf, 1, len, fp);
 	fclose(fp);
 
+	upload.camnum = camnum;
 	upload.readptr = inbuf;
 	upload.totalsize = len;
 	upload.sizeleft = len;
+
 
 	curl = curl_easy_init();
 	if (curl)
@@ -252,6 +269,8 @@ void CameraThread::StartUpload(int camnum)
 			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
 		}
 		curl_easy_cleanup(curl);
+
+		printf("Upload complete\n");
 	}
 
 	// ³¡
@@ -277,6 +296,8 @@ size_t CameraThread::read_callback(void* ptr, size_t size, size_t nmemb, void* u
 		upload->sizeleft -= copylen;
 
 		int progress = (int)( ((float)(upload->totalsize-upload->sizeleft) / upload->totalsize) * 100.f );
+		upload_progress[upload->camnum] = progress;
+
 		printf("Progress : %d\n", progress);
 		return copylen;
 	}
