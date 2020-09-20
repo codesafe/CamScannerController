@@ -13,7 +13,7 @@ public :
 
 	void	init();
 	void	uninit();
-	bool	connect();
+	bool	connect(int camnum);
 
 	void	update();
 	bool	read();

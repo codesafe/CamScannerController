@@ -57,6 +57,8 @@ int main(int argc, char** argv)
 	{
 		CameraThread* thread = new CameraThread();
 		thread->Start(i);
+
+		Utils::Sleep(1000);
 		threadlist.push_back(thread);
 	}
 
@@ -69,6 +71,8 @@ int main(int argc, char** argv)
 	{
 		Utils::Sleep(10);
 
+/*
+		// for test
 		int i = getch();
 		printf("Input = %d\n", i);
 		if (i == '0')
@@ -99,6 +103,7 @@ int main(int argc, char** argv)
 				threadlist[i]->addTestPacket(PACKET_FORCE_UPLOAD, i);
 			}
 		}
+*/
 	}
 
 	curl_global_cleanup();

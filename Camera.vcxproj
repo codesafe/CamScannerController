@@ -77,8 +77,6 @@
   <ItemGroup>
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="CameraManager.cpp" />
-    <ClCompile Include="camera_action.cpp" />
-    <ClCompile Include="camera_context.cpp" />
     <ClCompile Include="camera_thread.cpp" />
     <ClCompile Include="commander.cpp" />
     <ClCompile Include="logger.cpp" />
@@ -90,8 +88,6 @@
   <ItemGroup>
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="CameraManager.h" />
-    <ClInclude Include="camera_action.h" />
-    <ClInclude Include="camera_context.h" />
     <ClInclude Include="camera_info.h" />
     <ClInclude Include="camera_thread.h" />
     <ClInclude Include="commander.h" />

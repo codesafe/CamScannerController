@@ -115,8 +115,6 @@
     <ClInclude Include="predef.h" />
     <ClInclude Include="memdb.h" />
     <ClInclude Include="logger.h" />
-    <ClInclude Include="camera_context.h" />
-    <ClInclude Include="camera_action.h" />
     <ClInclude Include="camera_info.h" />
     <ClInclude Include="network.h" />
     <ClInclude Include="socket.h" />
@@ -129,8 +127,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="memdb.cpp" />
     <ClCompile Include="logger.cpp" />
-    <ClCompile Include="camera_context.cpp" />
-    <ClCompile Include="camera_action.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="socket.cpp" />
     <ClCompile Include="commander.cpp" />

@@ -45,6 +45,16 @@ void* CameraThread::thread_fn(void* arg)
 {
 	int camnum = (int)arg;
 	CameraController* camera = CameraMan::getInstance()->getCamera(camnum);
+	if (camera == NULL)
+	{
+		Logger::log(0, "Thread : Camera Create fail");
+		return((void*)0);
+	}
+	else
+	{
+		Logger::log(0, "Thread : Camera Create success %d", camnum);
+	}
+
 	cameras[camnum] = camera;
 
  	network[camnum].init();
@@ -94,7 +104,7 @@ void CameraThread::Update(int camnum)
 	{
 		case CAMERA_STATE::STATE_CONNECTION:
 			{
-				bool ret = network[camnum].connect();
+				bool ret = network[camnum].connect(camnum);
 				camera_state[camnum] = CAMERA_STATE::STATE_READY;
 			}
 			break;
@@ -116,10 +126,11 @@ void CameraThread::Update(int camnum)
 
 		case CAMERA_STATE::STATE_UPLOADING:
 			{
-				if (upload_progress[camnum] == 100)
+				if (upload_progress[camnum] == 10)
 				{
 					char data[10];
 					network[camnum].write(PACKET_UPLOAD_DONE, data, 10);
+					camera_state[camnum] = CAMERA_STATE::STATE_READY;
 				}
 
 			}
@@ -153,9 +164,11 @@ int	CameraThread::UpdateCommand(int camnum)
 				// 					ret = PartController::getInstance()->addsendqueuecommand(lwheelid, MOVE_SPEED, param);
 
 				// 포커스 
-				cameras[camnum]->apply_essential_param_param();
-				cameras[camnum]->set_settings_value("eosremoterelease", "Press 1");
-				printf("End action_camera_wait_focus : %d\n", ret);
+				cameras[camnum]->apply_essential_param_param(camnum);
+				ret = cameras[camnum]->set_settings_value("eosremoterelease", "Press 1");
+				printf("End Press 1 : %d : %d\n", ret, camnum);
+				ret = cameras[camnum]->set_settings_value("eosremoterelease", "Release 1");
+				printf("End Release 1 : %d : %d\n", ret, camnum);
 			}
 			break;
 
@@ -218,6 +231,7 @@ void CameraThread::addTestPacket(char packet, int camnum)
 void CameraThread::StartUpload(int camnum)
 {
 	camera_state[camnum] = CAMERA_STATE::STATE_UPLOADING;
+	upload_progress[camnum] = 0;
 
 	CURL* curl;
 	CURLcode res;
@@ -275,7 +289,6 @@ void CameraThread::StartUpload(int camnum)
 
 	// 끝
 	delete [] inbuf;
-	camera_state[camnum] = CAMERA_STATE::STATE_READY;
 }
 
 size_t CameraThread::read_callback(void* ptr, size_t size, size_t nmemb, void* userp)
@@ -296,9 +309,20 @@ size_t CameraThread::read_callback(void* ptr, size_t size, size_t nmemb, void* u
 		upload->sizeleft -= copylen;
 
 		int progress = (int)( ((float)(upload->totalsize-upload->sizeleft) / upload->totalsize) * 100.f );
-		upload_progress[upload->camnum] = progress;
+		int p = (progress / 10);
 
-		printf("Progress : %d\n", progress);
+		if (upload_progress[upload->camnum] != p)
+		{
+			upload_progress[upload->camnum] = p;
+			printf("upload_progress %d\n", upload_progress[upload->camnum]);
+
+			char data[32];
+			memcpy(data, &upload_progress[upload->camnum], sizeof(int));
+
+			network[upload->camnum].write(PACKET_UPLOAD_PROGRESS, data, 32);
+			network[upload->camnum].update();
+		}
+		//printf("Progress : %d\n", progress);
 		return copylen;
 	}
 

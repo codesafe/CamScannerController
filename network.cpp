@@ -32,10 +32,10 @@ void	Network::uninit()
 	enable = false;
 }
 
-bool	Network::connect()
+bool	Network::connect(int camnum)
 {
 	enable = socket->connect();
-	Logger::log(CLIENT_LOG_INFO, "socket connect : %s\n", enable ? "success" : "fail");
+	Logger::log(CLIENT_LOG_INFO, "socket connect : %d :%s", camnum, enable ? "success" : "fail");
 
 	return enable;
 }
@@ -47,7 +47,7 @@ void	Network::update()
 		bool ret = socket->update();
 		if( ret == false)
 		{
-			Logger::log(CLIENT_LOG_ERR, "socket disconnected\n");
+			Logger::log(CLIENT_LOG_ERR, "socket disconnected");
 			enable = false;
 		}
 
@@ -99,36 +99,3 @@ void	Network::parsepacket(SocketBuffer *buffer)
 	commander->addcommand(packet, buffer->buffer + sizeof(int) + sizeof(char), datasize);
 }
 
-/*
-int	Network::getpackettype(char packet)
-{
-	int type = COMMAND_ANIMATION;
-	switch(packet)
-	{
-		case FORCEPATCH :
-			type = COMMAND_FORCEPATCH;
-			break;
-
-		case DEVICERESET :
-			type = COMMAND_DEVICE;
-			break;
-
-		case PLAYMOTION :
-			type = COMMAND_ANIMATION;
-			break;
-
-		case WHEEL_FORWARD :
-		case WHEEL_BACKWARD :
-		case WHEEL_STOP :
-		case WHEEL_TURNLEFT :
-		case WHEEL_TURNRIGHT :
-			type = COMMAND_WHEEL;
-			break;
-
-		case DISPLAY_PIC :
-			type = COMMAND_DISPLAY;
-			break;
-	}
-
-	return type;
-}*/

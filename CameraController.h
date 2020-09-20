@@ -35,7 +35,7 @@ class CameraController
 		int set_settings_value(const char *key, const char *val);
 		int set_settings_value(const char* key, int val);
 
-		void apply_essential_param_param();
+		void apply_essential_param_param(int camnum);
 		void set_essential_param(CAMERA_PARAM param, string value);
 
 //         int preview(const char **file_data);

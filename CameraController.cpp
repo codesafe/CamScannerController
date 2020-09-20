@@ -436,26 +436,29 @@ GPContextMessageFunc CameraController::_message_callback(GPContext* context, con
 }
 
 // 아래의 param 셋팅
-void CameraController::apply_essential_param_param()
+void CameraController::apply_essential_param_param(int camnum)
 {
 	int ret = set_settings_value("iso", iso.c_str());					// "400"
-	if (ret != GP_OK)
+	if (ret < GP_OK)
 	{
-		Logger::log(0, "Error set_settings_value iso : %s", iso.c_str());
+		Logger::log(0, "Error set_settings_value iso : %s : %d", iso.c_str(), camnum);
+		Logger::log(0, "Error %d", ret);
 		return;
 	}
 
 	ret = set_settings_value("aperture", aperture.c_str());				// "10"
-	if (ret != GP_OK)
+	if (ret < GP_OK)
 	{
-		Logger::log(0, "Error set_settings_value aperture : %s", aperture.c_str());
+		Logger::log(0, "Error set_settings_value aperture : %s : %d", aperture.c_str(), camnum);
+		Logger::log(0, "Error %d", ret);
 		return;
 	}
 
 	ret = set_settings_value("shutterspeed", shutterspeed.c_str());		// "1/100"
-	if (ret != GP_OK)
+	if (ret < GP_OK)
 	{
-		Logger::log(0, "Error set_settings_value shutterspeed : %s", shutterspeed.c_str());
+		Logger::log(0, "Error set_settings_value shutterspeed : %s : %d", shutterspeed.c_str(), camnum);
+		Logger::log(0, "Error %d", ret);
 		return;
 	}
 }
