@@ -115,7 +115,9 @@ struct WriteThis
 enum CAMERA_STATE
 {
 	STATE_NONE,
+	STATE_STARTCONNECT,
 	STATE_CONNECTION,
+	STATE_CONNECT_ERROR,
 	STATE_READY,
 	STATE_FOCUSING,
 	STATE_SHOT,
@@ -135,7 +137,10 @@ enum CAMERA_STATE
 
 #define SERVER_ADD			"192.168.29.103"
 #define SERVER_PORT			8888
+#define SERVER_UDP_PORT		9999
 #define SOCKET_BUFFER		4096
+#define TCP_BUFFER			8
+#define UDP_BUFFER			8
 
 //#define I_AM_SERVER
 
@@ -155,6 +160,7 @@ enum CAMERA_STATE
 #define	PACKET_TRY_CONNECT		0x05	// connect to server
 #define	PACKET_SHOT				0x10	// shot picture
 #define PACKET_HALFPRESS		0x20	// auto focus
+#define PACKET_HALFRELEASE		0x21	// auto focus cancel
 
 #define PACKET_ISO				0x31
 #define PACKET_APERTURE			0x32
@@ -163,6 +169,8 @@ enum CAMERA_STATE
 #define PACKET_FORCE_UPLOAD		0x40	// for test
 #define PACKET_UPLOAD_PROGRESS	0x41
 #define PACKET_UPLOAD_DONE		0x42
+
+#define DEFAULT_CAPTURENAME		"capt0000.jpg"
 
 //////////////////////////////////////////////////////////////////////////
 

@@ -5,11 +5,9 @@
 //#include "network.h"
 #include "utils.h"
 
-void Logger::log(int logtype, const char* format, ...)
+void Logger::log(int camnum, const char* format, ...)
 {
-	//bool consolelog_enable = (CONSOLE_LOG & logtype) == 1 ? false : true;
 	bool consolelog_enable = true;
-
 	//bool filelog_enable = (FILE_LOG & logtype) == 0 ? false : true;		// define으로 제어
 	bool filelog_enable = MemDB::getInstance()->getBoolValue("filelog");
 
@@ -20,7 +18,11 @@ void Logger::log(int logtype, const char* format, ...)
 	va_end(ap);
 
 	std::string ds = Utils::getCurrentDateTime();
-	ds = ds + buf + '\n';
+
+	if(camnum > -1)
+		ds = Utils::format_string("Camara[%d] ", camnum) + ds + buf + '\n';
+	else
+		ds = ds + buf + '\n';
 
 	if (filelog_enable)
 	{

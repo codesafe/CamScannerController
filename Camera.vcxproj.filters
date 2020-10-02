@@ -122,6 +122,8 @@
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="camera_thread.h" />
     <ClInclude Include="CameraManager.h" />
+    <ClInclude Include="udpsocket.h" />
+    <ClInclude Include="tcpsocket.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -133,5 +135,7 @@
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="camera_thread.cpp" />
     <ClCompile Include="CameraManager.cpp" />
+    <ClCompile Include="udpsocket.cpp" />
+    <ClCompile Include="tcpsocket.cpp" />
   </ItemGroup>
 </Project>

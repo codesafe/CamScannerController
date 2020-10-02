@@ -14,8 +14,8 @@
 #include <memory>
 
 #include "predef.h"
-#include "camera_context.h"
-#include "camera_action.h"
+//#include "camera_context.h"
+//#include "camera_action.h"
 #include "utils.h"
 #include "network.h"
 #include "commander.h"
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 		CameraThread* thread = new CameraThread();
 		thread->Start(i);
 
-		Utils::Sleep(1000);
+		Utils::Sleep(1);
 		threadlist.push_back(thread);
 	}
 
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 
 	while (true)
 	{
-		Utils::Sleep(10);
+		Utils::Sleep(10000);
 
 /*
 		// for test

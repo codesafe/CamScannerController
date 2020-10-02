@@ -1,9 +1,14 @@
-﻿#include "socket.h"
+﻿
+#include <netinet/tcp.h>
+#include "socket.h"
 #include "logger.h"
 
 #ifdef WIN32
 #pragma comment(lib, "ws2_32.lib")
 #endif
+
+
+//#define USE_NONEBLOCK 1
 
 Socket::Socket()
 {
@@ -74,6 +79,14 @@ bool	Socket::initclient()
 	server.sin_family = AF_INET;
 	server.sin_port = htons(SERVER_PORT);
 
+	int flag = 1;
+	int ret = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(flag));
+	if (ret == -1)
+	{
+		Logger::log(CLIENT_LOG_ERR, "socket Setoption. Error!\n");
+		return false;
+	}
+
 	return true;
 }
 
@@ -96,7 +109,6 @@ bool	Socket::connect()
 		return false;
 	}
 
-
 	//set_nonblock
 #ifdef USE_NONEBLOCK
 	#ifdef __linux__
@@ -108,6 +120,7 @@ bool	Socket::connect()
 		if( ioctlsocket(sock, FIONBIO, &arg) != 0) return false;
 	#endif
 #endif
+	
 
 
 	return true;
@@ -271,13 +284,64 @@ bool	Socket::updateserver()
 
 bool	Socket::updateclient()
 {
+#if 1
+	int sel;
 
+	char in[SOCKET_BUFFER];
+	memset(&in, 0, sizeof(in));
+
+	int recvsize = ::recv(sock, in, sizeof(in), 0);
+	if (recvsize <= 0)
+	{
+		Logger::log(CLIENT_LOG_ERR, "Socket recv. Error!\n");
+		closesocket();
+		return false;
+	}
+	else
+	{
+		if (recvbuffer.totalsize > 0)
+		{
+			// 뒤에 이어 받아야함
+			memcpy(recvbuffer.buffer + recvbuffer.totalsize, in, recvsize);
+			recvbuffer.totalsize += recvsize;
+			recvdone();
+		}
+		else
+		{
+			// 처음 받음
+			recvbuffer.totalsize = recvsize;
+			memcpy(recvbuffer.buffer, in, recvsize);
+			recvdone();
+		}
+	}
+
+/*
+	// 보낼것이 있으면 보낸다로 설정
+	if (sendbuffer.totalsize > 0)
+		FD_SET(sock, &write_flags);
+
+	// 보냄
+	if (FD_ISSET(sock, &write_flags))
+	{
+		FD_CLR(sock, &write_flags);
+		int sendsize = ::send(sock, sendbuffer.buffer + sendbuffer.currentsize, sendbuffer.totalsize - sendbuffer.currentsize, 0);
+		if (sendbuffer.totalsize == sendbuffer.currentsize + sendsize)
+		{
+			senddone();
+		}
+		else
+		{
+			sendbuffer.currentsize += sendsize;
+		}
+	}
+*/
+#else
 	fd_set read_flags, write_flags;
 	struct timeval waitd;          // the max wait time for an event
 	int sel;
 
 	waitd.tv_sec = 0;
-	waitd.tv_usec = 1000;		// micro second
+	waitd.tv_usec = 0;		// micro second
 	FD_ZERO(&read_flags);
 	FD_ZERO(&write_flags);
 	FD_SET(sock, &read_flags);
@@ -297,7 +361,7 @@ bool	Socket::updateclient()
 		if (recvsize <= 0)
 		{
 			Logger::log(CLIENT_LOG_ERR, "Socket recv. Error!\n");
-			closesocket();
+			closesocket(); 
 			return false;
 		}
 		else
@@ -337,7 +401,7 @@ bool	Socket::updateclient()
 			sendbuffer.currentsize += sendsize;
 		}
 	}
-
+#endif
 	return true;
 }
 

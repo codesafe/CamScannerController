@@ -22,20 +22,25 @@ class CameraController
 		void init();
 		void release();
 
+		string getport();
 		void setPort(string port);
 		bool camera_found();
 		bool is_initialized();
-
+		bool is_halfpressed() { return _halfpressed;  }
 		bool is_busy();
 		void is_bussy(bool busy);
 		int capture(const char *filename);
+		int capture2(const char* filename);
+		int capture3(const char* filename);
+		int downloadimage(const char* filename);
 
 		int get_settings_value(const char *key, string &val);
 		int get_settings_choices(const char *key, std::vector<string> &choices);
 		int set_settings_value(const char *key, const char *val);
 		int set_settings_value(const char* key, int val);
 
-		void apply_essential_param_param(int camnum);
+		int apply_autofocus(int camnum, bool enable);
+		int apply_essential_param_param(int camnum);
 		void set_essential_param(CAMERA_PARAM param, string value);
 
 //         int preview(const char **file_data);
@@ -49,6 +54,7 @@ class CameraController
         Camera *_camera;
         GPContext *_context;
 
+		bool _halfpressed;
         bool _is_busy;
         bool _liveview_running;
         bool _camera_found;
@@ -58,6 +64,7 @@ class CameraController
 		string iso;
 		string shutterspeed;
 		string aperture;
+		string port;
 
         void _init_camera();
         int _wait_and_handle_event (useconds_t waittime, CameraEventType *type, int download);

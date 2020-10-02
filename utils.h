@@ -104,13 +104,9 @@ namespace Utils
 		return crc;
 	}
 
-	static void	Sleep(int t)
+	static void	Sleep(float t)
 	{
-#ifdef WIN32		
-		::Sleep(t);
-#else
-		usleep(t * 1000);
-#endif
+		usleep(t * 1000000.f);
 	}
 
 	static bool checkfileexist(std::string filename)
@@ -123,6 +119,7 @@ namespace Utils
 
 	}
 
+/*
 	static std::string getCurrentDateTime()
 	{
 #if WIN32
@@ -143,7 +140,31 @@ namespace Utils
 		return buf;
 #endif
 	}
+*/
 
+	static std::string getCurrentDateTime()
+	{
+		string sTimestamp;
+		char acTimestamp[256] = { 0, };
+
+		struct timeval tv;
+		struct tm* tm;
+
+		gettimeofday(&tv, NULL);
+
+		tm = localtime(&tv.tv_sec);
+
+		sprintf(acTimestamp, "%04d-%02d-%02d %02d:%02d:%02d.%03d\n",
+			tm->tm_year + 1900,
+			tm->tm_mon + 1,
+			tm->tm_mday,
+			tm->tm_hour,
+			tm->tm_min,
+			tm->tm_sec,
+			(int)(tv.tv_usec / 1000)
+		);
+		return acTimestamp;
+	}
 
 
 	static bool isDirExist(const std::string& path)

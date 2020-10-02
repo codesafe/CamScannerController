@@ -6,7 +6,7 @@
 class Logger
 {
 public:
-	static void log(int logtype, const char* format, ...);
+	static void log(int camnum, const char* format, ...);
 
 private:
 	Logger() {};

@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <utime.h>
 
 #include "utils.h"
 
@@ -28,6 +29,7 @@ CameraController::CameraController()
 	_camera = NULL;
 	_context = NULL;
 	_save_images = true;
+	_halfpressed = false;
 
 // 	iso = ISO_VALUE;
 // 	shutterspeed = SHUTTERSPEED_VALUE;
@@ -35,7 +37,7 @@ CameraController::CameraController()
 
 	iso = "1600";
 	shutterspeed = "1/60";
-	aperture = "5";
+	aperture = "10";
 }
 
 void CameraController::init()
@@ -49,23 +51,30 @@ void CameraController::init()
     }
 }
 
+string CameraController::getport()
+{
+	return port;
+}
+
 void CameraController::setPort(string port)
 {
 	GPPortInfoList* portinfo_list;
 	char verified_port[64] = { 0, };
 	strcpy(verified_port, port.c_str());
+	this->port = port;
+
 
 	GPPortInfo portinfo;
 	if (gp_port_info_list_new(&portinfo_list) < GP_OK)
 	{
-		Logger::log(0, "Error gp_port_info_list_new");
+		Logger::log(-1, "Error gp_port_info_list_new");
 		return;
 	}
 
 	int result = gp_port_info_list_load(portinfo_list);
 	if (result < 0)
 	{
-		Logger::log(0, "Error gp_port_info_list_load");
+		Logger::log(-1, "Error gp_port_info_list_load");
 		gp_port_info_list_free(portinfo_list);
 		return;
 	}
@@ -73,14 +82,14 @@ void CameraController::setPort(string port)
 	int p = gp_port_info_list_lookup_path(portinfo_list, verified_port);
 	if (p < GP_OK)
 	{
-		Logger::log(0, "Error gp_port_info_list_lookup_path : %d", p);
+		Logger::log(-1, "Error gp_port_info_list_lookup_path : %d", p);
 		return;
 	}
 
 	int r = gp_port_info_list_get_info(portinfo_list, p, &portinfo);
 	if (r < GP_OK)
 	{
-		Logger::log(0, "Error gp_port_info_list_get_info : %d", r);
+		Logger::log(-1, "Error gp_port_info_list_get_info : %d", r);
 		return;
 	}
 
@@ -208,6 +217,190 @@ int CameraController::capture(const char *filename)
     return true;
 }
 
+int CameraController::capture2(const char* filename)
+{
+	_is_busy = true;
+
+	int ret, fd;
+	CameraFile* file;
+	CameraFilePath path;
+
+	strcpy(path.folder, "/");
+	strcpy(path.name, filename);
+
+	ret = gp_camera_capture(_camera, GP_CAPTURE_IMAGE, &path, _context);
+	if (ret != GP_OK)
+		return ret;
+
+	_is_busy = false;
+	return true;
+}
+
+int CameraController::capture3(const char* filename)
+{
+	_is_busy = true;
+
+	set_settings_value("eosremoterelease", "Immediate");
+
+	void* data = NULL;
+	CameraEventType	event;
+	CameraFilePath* fn;
+	int ret;
+	bool loop = true;
+
+	while (loop)
+	{
+		int leftoverms = 1000;
+		ret = gp_camera_wait_for_event(_camera, leftoverms, &event, &data, _context);
+		if (ret != GP_OK)
+			return ret;
+
+		switch (event) 
+		{
+			case GP_EVENT_FILE_ADDED:
+			{
+				fn = (CameraFilePath*)data;
+
+				CameraFile* file;
+				CameraFileInfo info;
+				ret = gp_camera_file_get_info(_camera, fn->folder, fn->name, &info, _context);
+				if (ret != GP_OK)
+				{
+					printf("gp_camera_file_get_info %s : %d Error\n", filename, ret);
+
+					free(data);
+					_is_busy = false;
+					return ret;
+				}
+				else
+				{
+					printf("gp_camera_file_get_info %s : %s success\n", fn->folder, fn->name);
+				}
+
+				int fd;
+				fd = open(filename, O_CREAT | O_RDWR, 0644);
+				ret = gp_file_new_from_fd(&file, fd);
+				if (ret != GP_OK)
+				{
+					printf("gp_file_new_from_fd %s Error\n", filename);
+					gp_file_unref(file);
+					free(data);
+					_is_busy = false;
+					return ret;
+				}
+
+				ret = gp_camera_file_get(_camera, fn->folder, fn->name, GP_FILE_TYPE_NORMAL, file, _context);
+				if (ret != GP_OK)
+				{
+					printf("gp_camera_file_get %s : %d Error\n", filename, ret);
+					gp_file_unref(file);
+					free(data);
+					_is_busy = false;
+					return ret;
+				}
+				else
+				{
+					printf("gp_camera_file_get %s : %s success\n", fn->folder, fn->name);
+				}
+
+				//gp_file_unref(file);
+				gp_file_free(file);
+				//loop = false;
+			}
+			break;
+
+			case GP_EVENT_CAPTURE_COMPLETE:
+			{
+				loop = false;
+				printf("Capture %s Done!\n", filename);
+			}
+			break;
+		}
+		free(data);
+	}
+
+	set_settings_value("eosremoterelease", "Release Full");
+	_is_busy = false;
+	_halfpressed = false;
+
+	return true;
+}
+
+int CameraController::downloadimage(const char* filename)
+{
+	_is_busy = true;
+
+	int ret, fd;
+	CameraFile* file;
+	CameraFilePath path;
+
+	strcpy(path.folder, "/");
+	strcpy(path.name, filename);
+
+/*
+	ret = gp_camera_capture(_camera, GP_CAPTURE_IMAGE, &path, _context);
+	if (ret != GP_OK)
+		return ret;
+*/
+
+
+	if (_save_images == false)
+	{
+		ret = gp_file_new(&file);
+	}
+	else 
+	{
+		fd = open(filename, O_CREAT | O_RDWR, 0644);
+		ret = gp_file_new_from_fd(&file, fd);
+	}
+
+	if (ret != GP_OK) {
+		_is_busy = false;
+		return ret;
+	}
+
+	ret = gp_camera_file_get(_camera, path.folder, path.name, GP_FILE_TYPE_NORMAL, file, _context);
+
+	if (ret != GP_OK) {
+		_is_busy = false;
+		return ret;
+	}
+
+	if (_save_images == false)
+	{
+		ret = gp_camera_file_delete(_camera, path.folder, path.name, _context);
+
+		if (ret != GP_OK) {
+			_is_busy = false;
+			return ret;
+		}
+	}
+
+
+	int waittime = 10;
+	CameraEventType type;
+	void* eventdata;
+
+	while (1)
+	{
+		gp_camera_wait_for_event(_camera, waittime, &type, &eventdata, _context);
+
+		if (type == GP_EVENT_TIMEOUT) {
+			break;
+		}
+		else if (type == GP_EVENT_CAPTURE_COMPLETE || type == GP_EVENT_FILE_ADDED) {
+			waittime = 10;
+		}
+		else if (type != GP_EVENT_UNKNOWN) {
+			printf("Unexpected event received from camera: %d\n", (int)type);
+		}
+	}
+
+	gp_file_free(file);
+
+	_is_busy = false;
+}
+
 
 int CameraController::get_settings_choices(const char* key, vector<string>& choices)
 {
@@ -282,27 +475,32 @@ int CameraController::get_settings_value(const char* key, string& val)
 
 int CameraController::set_settings_value(const char* key, const char* val)
 {
+	if (key == std::string("eosremoterelease") && val == std::string("Press Half"))
+		_halfpressed = true;
+	else if (key == std::string("eosremoterelease") && val == std::string("Release Full"))
+		_halfpressed = false;
+
 	_is_busy = true;
 	CameraWidget* w, * child;
 	int ret = gp_camera_get_config(_camera, &w, _context);
 	if (ret < GP_OK)
 	{
 		_is_busy = false;
-		return false;
+		return ret;
 	}
 
 	ret = gp_widget_get_child_by_name(w, key, &child);
 	if (ret < GP_OK)
 	{
 		_is_busy = false;
-		return false;
+		return ret;
 	}
 
 	ret = gp_widget_set_value(child, val);
 	if (ret < GP_OK)
 	{
 		_is_busy = false;
-		return false;
+		return ret;
 	}
 
 
@@ -310,12 +508,12 @@ int CameraController::set_settings_value(const char* key, const char* val)
 	if (ret < GP_OK)
 	{
 		_is_busy = false;
-		return false;
+		return ret;
 	}
 	gp_widget_free(w);
 
 	_is_busy = false;
-	return (ret == GP_OK);
+	return ret;
 }
 
 int CameraController::set_settings_value(const char* key, int val)
@@ -326,21 +524,21 @@ int CameraController::set_settings_value(const char* key, int val)
 	if (ret < GP_OK)
 	{
 		_is_busy = false;
-		return false;
+		return ret;
 	}
 
 	ret = gp_widget_get_child_by_name(w, key, &child);
 	if (ret < GP_OK)
 	{
 		_is_busy = false;
-		return false;
+		return ret;
 	}
 
 	ret = gp_widget_set_value(child, &val);
 	if (ret != GP_OK)
 	{
 		_is_busy = false;
-		return false;
+		return ret;
 	}
 
 
@@ -348,13 +546,13 @@ int CameraController::set_settings_value(const char* key, int val)
 	if (ret < GP_OK)
 	{
 		_is_busy = false;
-		return false;
+		return ret;
 	}
 
 	gp_widget_free(w);
 
 	_is_busy = false;
-	return (ret == GP_OK);
+	return ret;
 }
 
 /**
@@ -435,32 +633,67 @@ GPContextMessageFunc CameraController::_message_callback(GPContext* context, con
 	return 0;
 }
 
-// 아래의 param 셋팅
-void CameraController::apply_essential_param_param(int camnum)
+int CameraController::apply_autofocus(int camnum, bool enable)
 {
-	int ret = set_settings_value("iso", iso.c_str());					// "400"
+	int ret = set_settings_value("cancelautofocus", enable ? "0" : "1");
 	if (ret < GP_OK)
 	{
-		Logger::log(0, "Error set_settings_value iso : %s : %d", iso.c_str(), camnum);
-		Logger::log(0, "Error %d", ret);
-		return;
+		Logger::log(camnum, "Error cancelautofocus : %d",ret);
+		return ret;
+	}
+
+	ret = set_settings_value("autofocusdrive", enable ? "True" : "False");
+	if (ret < GP_OK)
+	{
+		Logger::log(camnum, "Error autofocusdrive : %d", ret);
+		return ret;
+	}
+
+
+	return ret;
+}
+
+// 아래의 param 셋팅
+int CameraController::apply_essential_param_param(int camnum)
+{
+	int ret = 0;
+// 	ret = set_settings_value("autofocusdrive", "0");
+// 	if (ret < GP_OK)
+// 	{
+// 		Logger::log(0, "Error autofocusdrive : %d : ret", camnum, ret);
+// 		return ret;
+// 	}
+
+/*
+	ret = set_settings_value("cancelautofocus", "1");
+	if (ret < GP_OK)
+	{
+		Logger::log(0, "Error cancelautofocus : %d : ret", camnum, ret);
+		return ret;
+	}*/
+
+	ret = set_settings_value("iso", iso.c_str());					// "400"
+	if (ret < GP_OK)
+	{
+		Logger::log(camnum, "Error set_settings_value iso : %s : %d : %d", iso.c_str(), camnum, ret);
+		return ret;
 	}
 
 	ret = set_settings_value("aperture", aperture.c_str());				// "10"
 	if (ret < GP_OK)
 	{
-		Logger::log(0, "Error set_settings_value aperture : %s : %d", aperture.c_str(), camnum);
-		Logger::log(0, "Error %d", ret);
-		return;
+		Logger::log(camnum, "Error set_settings_value aperture : %s : %d : %d", aperture.c_str(), camnum, ret);
+		return ret;
 	}
 
 	ret = set_settings_value("shutterspeed", shutterspeed.c_str());		// "1/100"
 	if (ret < GP_OK)
 	{
-		Logger::log(0, "Error set_settings_value shutterspeed : %s : %d", shutterspeed.c_str(), camnum);
-		Logger::log(0, "Error %d", ret);
-		return;
+		Logger::log(camnum, "Error set_settings_value shutterspeed : %s : %d : %d", shutterspeed.c_str(), camnum, ret);
+		return ret;
 	}
+
+	return ret;
 }
 
 void CameraController::set_essential_param(CAMERA_PARAM param, string value)

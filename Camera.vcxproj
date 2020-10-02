@@ -84,6 +84,8 @@
     <ClCompile Include="memdb.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="socket.cpp" />
+    <ClCompile Include="tcpsocket.cpp" />
+    <ClCompile Include="udpsocket.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraController.h" />
@@ -131,6 +133,8 @@
     <ClInclude Include="network.h" />
     <ClInclude Include="predef.h" />
     <ClInclude Include="socket.h" />
+    <ClInclude Include="tcpsocket.h" />
+    <ClInclude Include="udpsocket.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
