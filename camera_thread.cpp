@@ -301,6 +301,14 @@ int CameraThread::parsePacket(int camnum, char* buf)
 				printf("End Release 1 : %d : %d\n", ret, camnum);
 			}
 */
+			char i = buf[1];	// iso
+			char s = buf[2];	// shutterspeed
+			char a = buf[3];	// aperture
+
+			cameras[camnum]->set_essential_param(CAMERA_PARAM::ISO, isoString[i]);
+			cameras[camnum]->set_essential_param(CAMERA_PARAM::SHUTTERSPEED, shutterspeedString[s]);
+			cameras[camnum]->set_essential_param(CAMERA_PARAM::APERTURE, apertureString[a]);
+
 			ret = cameras[camnum]->apply_autofocus(camnum, false);
 			if (ret < GP_OK)
 			{
@@ -390,24 +398,28 @@ int CameraThread::parsePacket(int camnum, char* buf)
 		case PACKET_ISO:
 		{
 			//int value = (int&)*(it->data);
-			string value = (char*)buf[1];
-			cameras[camnum]->set_essential_param(CAMERA_PARAM::ISO, value);
+			//string value = (char*)buf[1];
+			char v = buf[1];
+			iso = isoString[v];
+			cameras[camnum]->set_essential_param(CAMERA_PARAM::ISO, iso);
 		}
 		break;
 
 		case PACKET_APERTURE:
 		{
 			//int value = (int&)*(it->data);
-			string value = (char*)buf[1];
-			cameras[camnum]->set_essential_param(CAMERA_PARAM::APERTURE, value);
+			char v = buf[1];
+			aperture = apertureString[v];
+			cameras[camnum]->set_essential_param(CAMERA_PARAM::APERTURE, apertureString[v]);
 		}
 		break;
 
 		case PACKET_SHUTTERSPEED:
 		{
 			//int value = (int&)*(it->data);
-			string value = (char*)buf[1];
-			cameras[camnum]->set_essential_param(CAMERA_PARAM::SHUTTERSPEED, value);
+			char v = buf[1];
+			shutterspeed = shutterspeedString[v];
+			cameras[camnum]->set_essential_param(CAMERA_PARAM::SHUTTERSPEED, shutterspeed);
 		}
 		break;
 

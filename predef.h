@@ -197,6 +197,14 @@ enum CAMERA_PARAM
 #define APERTURE_VALUE			"9"
 */
 
+extern string iso;
+extern string aperture;
+extern string shutterspeed;
+
+extern string apertureString[];
+extern string isoString[];
+extern string shutterspeedString[];
+
 
 
 #endif

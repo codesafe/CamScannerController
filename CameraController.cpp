@@ -35,9 +35,9 @@ CameraController::CameraController()
 // 	shutterspeed = SHUTTERSPEED_VALUE;
 // 	aperture = APERTURE_VALUE;
 
-	iso = "1600";
-	shutterspeed = "1/60";
-	aperture = "10";
+// 	iso = ::iso;
+// 	shutterspeed = ::shutterspeed;
+// 	aperture = ::aperture;
 }
 
 void CameraController::init()
@@ -642,7 +642,8 @@ int CameraController::apply_autofocus(int camnum, bool enable)
 		return ret;
 	}
 
-	ret = set_settings_value("autofocusdrive", enable ? "True" : "False");
+	//ret = set_settings_value("autofocusdrive", enable ? "True" : "False");
+	ret = set_settings_value("autofocusdrive", enable ? "1" : "0");
 	if (ret < GP_OK)
 	{
 		Logger::log(camnum, "Error autofocusdrive : %d", ret);

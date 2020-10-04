@@ -61,9 +61,9 @@ class CameraController
         bool _is_initialized;
         bool _save_images;
 
-		string iso;
-		string shutterspeed;
-		string aperture;
+// 		string iso;
+// 		string shutterspeed;
+// 		string aperture;
 		string port;
 
         void _init_camera();
