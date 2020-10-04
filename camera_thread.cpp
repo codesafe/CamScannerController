@@ -209,6 +209,69 @@ void CameraThread::Update(int camnum)
 
 }
 
+
+/*
+#define 	GP_ERROR_CORRUPTED_DATA   -102
+Corrupted data received.More...
+#define 	GP_ERROR_FILE_EXISTS   -103
+File already exists.More...
+#define 	GP_ERROR_MODEL_NOT_FOUND   -105
+Specified camera model was not found.More...
+#define 	GP_ERROR_DIRECTORY_NOT_FOUND   -107
+Specified directory was not found.More...
+#define 	GP_ERROR_FILE_NOT_FOUND   -108
+Specified file was not found.More...
+#define 	GP_ERROR_DIRECTORY_EXISTS   -109
+Specified directory already exists.More...
+#define 	GP_ERROR_CAMERA_BUSY   -110
+The camera is already busy.More...
+#define 	GP_ERROR_PATH_NOT_ABSOLUTE   -111
+Path is not absolute.More...
+#define 	GP_ERROR_CANCEL   -112
+Cancellation successful.More...
+#define 	GP_ERROR_CAMERA_ERROR   -113
+Unspecified camera error.More...
+#define 	GP_ERROR_OS_FAILURE   -114
+Unspecified failure of the operating system.More...
+#define 	GP_ERROR_NO_SPACE   -115
+Not enough space.More...
+*/
+
+string GetError(int errorcode)
+{
+	switch (errorcode)
+	{
+		case GP_ERROR_CORRUPTED_DATA:
+			return string("GP_ERROR_CORRUPTED_DATA");
+
+		case GP_ERROR_FILE_EXISTS:
+			return string("GP_ERROR_FILE_EXISTS");
+		case GP_ERROR_MODEL_NOT_FOUND:
+			return string("GP_ERROR_MODEL_NOT_FOUND");
+		case GP_ERROR_DIRECTORY_NOT_FOUND:
+			return string("GP_ERROR_DIRECTORY_NOT_FOUND");
+		case GP_ERROR_FILE_NOT_FOUND:
+			return string("GP_ERROR_FILE_NOT_FOUND");
+		case GP_ERROR_DIRECTORY_EXISTS:
+			return string("GP_ERROR_DIRECTORY_EXISTS");
+		case GP_ERROR_CAMERA_BUSY:
+			return string("GP_ERROR_CAMERA_BUSY");
+		case GP_ERROR_PATH_NOT_ABSOLUTE:
+			return string("GP_ERROR_PATH_NOT_ABSOLUTE");
+		case GP_ERROR_CANCEL:
+			return string("GP_ERROR_CANCEL");
+		case GP_ERROR_CAMERA_ERROR:
+			return string("GP_ERROR_CAMERA_ERROR");
+		case GP_ERROR_OS_FAILURE:
+			return string("GP_ERROR_OS_FAILURE");
+		case GP_ERROR_NO_SPACE:
+			return string("GP_ERROR_NO_SPACE");
+	}
+		
+	string errorstr = gp_port_result_as_string(errorcode);
+	return errorstr;
+}
+
 int CameraThread::parsePacket(int camnum, char* buf)
 {
 	char packet = buf[0];
@@ -222,6 +285,10 @@ int CameraThread::parsePacket(int camnum, char* buf)
 
 		case PACKET_HALFPRESS:
 		{
+
+			char data[TCP_BUFFER] = { 0, };
+			data[0] = PACKET_AUTOFOCUS_RESULT;
+
 /*
 			if (cameras[camnum]->is_halfpressed())
 			{
@@ -234,17 +301,25 @@ int CameraThread::parsePacket(int camnum, char* buf)
 				printf("End Release 1 : %d : %d\n", ret, camnum);
 			}
 */
-			ret = cameras[camnum]->apply_autofocus(camnum, true);
+			ret = cameras[camnum]->apply_autofocus(camnum, false);
 			if (ret < GP_OK)
 			{
-				printf("ERR apply_autofocus (True) : %d : %d\n", ret, camnum);
+				string errorstr = GetError(ret);
+				Logger::log(camnum,"ERR apply_autofocus (False) : %s(%d): %d\n", errorstr.c_str(), ret, camnum);
+
+				data[1] = RESPONSE_FAIL;
+				tcpsocket[camnum].send(data);
 				return ret;
 			}
 
 			ret = cameras[camnum]->apply_essential_param_param(camnum);
 			if (ret < GP_OK)
 			{
-				printf("ERR apply_essential_param_param : %d : %d\n", ret, camnum);
+				string errorstr = GetError(ret);
+				Logger::log(camnum, "ERR apply_essential_param_param : %s(%d): %d\n", errorstr.c_str(), ret, camnum);
+
+				data[1] = RESPONSE_FAIL;
+				tcpsocket[camnum].send(data);
 				return ret;
 			}
 
@@ -252,31 +327,47 @@ int CameraThread::parsePacket(int camnum, char* buf)
 			ret = cameras[camnum]->set_settings_value("eosremoterelease", "Press Half");
 			if (ret < GP_OK)
 			{
-				printf("ERR eosremoterelease Press Half : %d : %d\n", ret, camnum);
+				string errorstr = GetError(ret);
+				Logger::log(camnum, "ERR eosremoterelease Press Half : %s(%d): %d\n", errorstr.c_str(), ret, camnum);
+
+
+				data[1] = RESPONSE_FAIL;
+				tcpsocket[camnum].send(data);
 				return ret;
 			}
 			else
-				printf("Press Half : %d : %d\n", ret, camnum);
+				Logger::log(camnum, "Press Half : %d : %d\n", ret, camnum);
 
 			ret = cameras[camnum]->set_settings_value("eosremoterelease", "Release Full");
 			if (ret < GP_OK)
 			{
-				printf("ERR eosremoterelease Release Full : %d : %d\n", ret, camnum);
+				string errorstr = GetError(ret);
+				Logger::log(camnum, "ERR eosremoterelease Release Full : %s(%d): %d\n", errorstr.c_str(), ret, camnum);
+
+				data[1] = RESPONSE_FAIL;
+				tcpsocket[camnum].send(data);
 				return ret;
 			}
 
 			ret = cameras[camnum]->apply_autofocus(camnum, false);
 			if (ret < GP_OK)
 			{
-				printf("ERR apply_autofocus (False) : %d : %d\n", ret, camnum);
+				string errorstr = GetError(ret);
+				Logger::log(camnum, "ERR apply_autofocus (False) : %s(%d): %d\n", errorstr.c_str(), ret, camnum);
+
+				data[1] = RESPONSE_FAIL;
+				tcpsocket[camnum].send(data);
 				return ret;
 			}
+
+			data[1] = RESPONSE_OK;
+			tcpsocket[camnum].send(data);
 		}
 		break;
 
 		case PACKET_SHOT:
 		{
-			printf("---> Shot : %d %s \n", camnum, date.c_str());
+			Logger::log(camnum, "---> Shot : %s", date.c_str());
 			// Âï¾î
 			string name = Utils::format_string("name-%d.jpg", camnum);
 			int ret = cameras[camnum]->capture3(name.c_str());
@@ -284,7 +375,7 @@ int CameraThread::parsePacket(int camnum, char* buf)
 			if (ret < GP_OK)
 			{
 				camera_state[camnum] = CAMERA_STATE::STATE_READY;
-				printf("Shot : %d Error : (%d)\n", camnum, ret);
+				Logger::log(camnum, "Shot Error : (%d)", ret);
 			}
 			else
 			{
@@ -560,9 +651,21 @@ size_t CameraThread::read_callback(void* ptr, size_t size, size_t nmemb, void* u
 
 			//char data[32];
 			//memcpy(data, &upload_progress[upload->camnum], sizeof(int));
-
 			//network[upload->camnum].write(PACKET_UPLOAD_PROGRESS, data, 32);
 			//network[upload->camnum].update();
+
+			char buf[TCP_BUFFER];
+			if (p == 10)
+			{
+				buf[0] = PACKET_UPLOAD_DONE;
+			}
+			else
+			{
+				buf[0] = PACKET_UPLOAD_PROGRESS;
+				buf[1] = (char)upload_progress[upload->camnum];
+			}
+
+			tcpsocket[upload->camnum].send(buf);
 		}
 		//printf("Progress : %d\n", progress);
 		return copylen;

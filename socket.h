@@ -57,6 +57,8 @@ public :
 	bool	sendpacket(char *packet,int packetsize);		// 실제로 보내는것 아님
 	bool	recvpacket(SocketBuffer *buffer);
 
+	int		sendImmediate(char* buf, int datasize);
+
 private :
 	void	senddone();
 	void	recvdone();

@@ -490,3 +490,8 @@ bool	Socket::recvpacket(SocketBuffer *buffer)
 	return false;
 }
 
+
+int		Socket::sendImmediate(char *buf, int datasize)
+{
+	return ::send(sock, buf, datasize, 0);
+}

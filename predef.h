@@ -38,7 +38,7 @@ using namespace std;
 #include <gphoto2/gphoto2-port-log.h>
 #include <gphoto2/gphoto2-setting.h>
 #include <gphoto2/gphoto2-filesys.h>
-
+#include <gphoto2/gphoto2-port-result.h>
 
 
 typedef struct _GPParams GPParams;
@@ -169,6 +169,9 @@ enum CAMERA_STATE
 #define PACKET_FORCE_UPLOAD		0x40	// for test
 #define PACKET_UPLOAD_PROGRESS	0x41
 #define PACKET_UPLOAD_DONE		0x42
+
+#define PACKET_AUTOFOCUS_RESULT	0x50
+
 
 #define DEFAULT_CAPTURENAME		"capt0000.jpg"
 

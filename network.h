@@ -18,6 +18,8 @@ public :
 	void	update();
 	bool	read();
 	bool	write(char packet, char *data, int datasize);
+
+	int		sendImmediate(char* data, int datasize);
 	bool	getenable() { return enable;  }
 
 	Commander *getcommander() { return commander; }

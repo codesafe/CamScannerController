@@ -99,3 +99,8 @@ void	Network::parsepacket(SocketBuffer *buffer)
 	commander->addcommand(packet, buffer->buffer + sizeof(int) + sizeof(char), datasize);
 }
 
+
+int		Network::sendImmediate(char* data, int datasize)
+{
+	return socket->sendImmediate(data, datasize);
+}

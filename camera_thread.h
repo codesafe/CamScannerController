@@ -27,7 +27,6 @@ private:
 
 	static int parsePacket(int camnum, char* buf);
 
-
 	static void StartUpload(int camnum);
 	static size_t read_callback(void* ptr, size_t size, size_t nmemb, void* userp);
 
