@@ -70,7 +70,7 @@ bool	Socket::initclient()
 	}
 	std::string serveradd = MemDB::getInstance()->getValue("serveraddress");
 	if (serveradd == "")
-		serveradd = SERVER_ADD;
+		serveradd = serveraddress;
 
 	Logger::log(CLIENT_LOG_INFO, "server address : %s\n", serveradd.c_str());
 

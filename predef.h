@@ -137,7 +137,7 @@ enum CAMERA_STATE
 
 #define SERVER_ADD			"192.168.29.103"
 #define SERVER_PORT			8888
-#define SERVER_UDP_PORT		9999
+#define SERVER_UDP_PORT		11000
 #define SOCKET_BUFFER		4096
 #define TCP_BUFFER			8
 #define UDP_BUFFER			8
@@ -205,6 +205,7 @@ extern string apertureString[];
 extern string isoString[];
 extern string shutterspeedString[];
 
-
+extern string serveraddress;
+extern string camera_id;
 
 #endif

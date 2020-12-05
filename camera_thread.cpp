@@ -54,7 +54,7 @@ bool CameraThread::exitthread[MAX_CAMERA];
 pthread_mutex_t CameraThread::mutex_lock[MAX_CAMERA];
 pthread_mutex_t CameraThread::exitmutex_lock[MAX_CAMERA];
 int CameraThread::upload_progress[MAX_CAMERA];
-
+char CameraThread::camera_serverid[MAX_CAMERA];
 
 CameraThread::CameraThread()
 {
@@ -157,10 +157,13 @@ void CameraThread::Update(int camnum)
 				int recvbyte = tcpsocket[camnum].recv(buf);
 				if (recvbyte > 0)
 				{
-					char _num = buf[0];
-					udpsocket[camnum].init(_num);
+					camera_serverid[camnum] = buf[0];
+					udpsocket[camnum].init(camera_serverid[camnum]);
 					camera_state[camnum] = CAMERA_STATE::STATE_READY;
-					Logger::log(camnum, "Connected! Created Camera");
+					Logger::log(camnum, "--------------------------------------------------------");
+					Logger::log(camnum, "Connected! Camera Server ID : %d", camera_serverid[camnum]);
+					Logger::log(camnum, "--------------------------------------------------------");
+
 				}
 			}
 			break;
@@ -377,7 +380,7 @@ int CameraThread::parsePacket(int camnum, char* buf)
 		{
 			Logger::log(camnum, "---> Shot : %s", date.c_str());
 			// Âï¾î
-			string name = Utils::format_string("name-%d.jpg", camnum);
+			string name = Utils::format_string("name-%d.jpg", camera_serverid[camnum]);
 			int ret = cameras[camnum]->capture3(name.c_str());
 
 			if (ret < GP_OK)
@@ -570,9 +573,8 @@ void CameraThread::addTestPacket(char packet, int camnum)
 
 }
 
-void CameraThread::StartUpload(int camnum)
+bool CameraThread::StartUpload(int camnum)
 {
-	Logger::log(camnum, "Start Upload FTP");
 	camera_state[camnum] = CAMERA_STATE::STATE_UPLOADING;
 	upload_progress[camnum] = 0;
 
@@ -580,7 +582,12 @@ void CameraThread::StartUpload(int camnum)
 	CURLcode res;
 	struct WriteThis upload;
 
-	string name = Utils::format_string("name-%d.jpg", camnum);
+	string name = Utils::format_string("name-%d.jpg", camera_serverid[camnum]);
+
+	Logger::log(camnum, "--------------------------------------------------------");
+	Logger::log(camnum, "Start Upload FTP : %s", name.c_str());
+	Logger::log(camnum, "--------------------------------------------------------");
+
 	char* inbuf = NULL;
 	int len = 0;
 
@@ -588,9 +595,9 @@ void CameraThread::StartUpload(int camnum)
 	fp = fopen(name.c_str(), "rb");
 	if (fp == NULL)
 	{
-		Logger::log(camnum, "fp is NULL");
+		Logger::log(camnum, "%s file not found.", name.c_str());
 		camera_state[camnum] = CAMERA_STATE::STATE_READY;
-		return;
+		return false;
 	}
 
 	fseek(fp, 0, SEEK_END);
@@ -611,7 +618,8 @@ void CameraThread::StartUpload(int camnum)
 	curl = curl_easy_init();
 	if (curl)
 	{
-		string url = "ftp://192.168.29.103/" + name;
+		string url = "ftp://" + serveraddress + "/"+ name;
+		//string url = "ftp://192.168.29.103/" + name;
 		//curl_easy_setopt(curl, CURLOPT_URL, "ftp://192.168.29.103/2.jpg");
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 		curl_easy_setopt(curl, CURLOPT_USERPWD, "codesafe:6502");
@@ -634,6 +642,7 @@ void CameraThread::StartUpload(int camnum)
 
 	// ³¡
 	delete[] inbuf;
+	return true;
 }
 
 size_t CameraThread::read_callback(void* ptr, size_t size, size_t nmemb, void* userp)

@@ -27,7 +27,7 @@ private:
 
 	static int parsePacket(int camnum, char* buf);
 
-	static void StartUpload(int camnum);
+	static bool StartUpload(int camnum);
 	static size_t read_callback(void* ptr, size_t size, size_t nmemb, void* userp);
 
 	pthread_t		threadid;
@@ -45,6 +45,7 @@ private:
 	static pthread_mutex_t exitmutex_lock[MAX_CAMERA];
 
 	static int upload_progress[MAX_CAMERA];
+	static char camera_serverid[MAX_CAMERA];
 
 };
 

@@ -14,9 +14,7 @@ UDP_Socket::~UDP_Socket()
 
 void UDP_Socket::init(int camnum)
 {
-	sock = socket(AF_INET, SOCK_DGRAM, 0);
-
-	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1) 
+	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
 	{
 		printf("sock failed\n");
 		return;
@@ -28,11 +26,14 @@ void UDP_Socket::init(int camnum)
 	servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	servAddr.sin_port = htons(SERVER_UDP_PORT + camnum);
 
-	if (bind(sock, (struct sockaddr*) & servAddr, sizeof(servAddr)) == -1) 
+	Logger::log(camnum, "Init UDP Port : %d", SERVER_UDP_PORT + camnum);
+
+	if (bind(sock, (struct sockaddr*)&servAddr, sizeof(servAddr)) == -1) 
 	{
 		printf("bind failed\n");
 		return;
 	}
+
 }
 
 int UDP_Socket::update(char *buf)

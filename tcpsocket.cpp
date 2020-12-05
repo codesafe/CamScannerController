@@ -22,7 +22,7 @@ void TCP_Socket::init()
 	}
 	std::string serveradd = MemDB::getInstance()->getValue("serveraddress");
 	if (serveradd == "")
-		serveradd = SERVER_ADD;
+		serveradd = serveraddress;
 
 	Logger::log(-1, "server address : %s\n", serveradd.c_str());
 

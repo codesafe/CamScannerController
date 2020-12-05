@@ -35,6 +35,8 @@ string shutterspeedString[] = {
 string iso = isoString[ISO_VALUE];
 string aperture = apertureString[APERTURE_VALUE];
 string shutterspeed = shutterspeedString[SHUTTERSPEED_VALUE];
+string serveraddress = "";// SERVER_ADD;
+string camera_id = "";
 
 int getch(void) 
 {
@@ -51,9 +53,45 @@ int getch(void)
 	return ch;
 }
 
+void ClearString(char *buf)
+{
+	for (int i = 0; i < 32; i++)
+	{
+		buf[i] = (buf[i] == '\n' || buf[i] == '\r') ? 0 : buf[i];
+	}
+}
+
+void LoadConfig()
+{
+	printf("Load Config\n");
+
+	FILE* fp = fopen("config.txt", "rt");
+	if (fp != NULL)
+	{
+// 		char strTemp[32] = { 0, };
+// 		fgets(strTemp, sizeof(strTemp), fp);
+// 		ClearString(strTemp);
+// 		camera_id = string(strTemp);
+// 		printf("camera id : %s\n", camera_id.c_str());
+
+		char address[32] = { 0, };
+		fgets(address, sizeof(address), fp);
+		ClearString(address);
+		serveraddress = string(address);
+		printf("serveraddress %s\n", serveraddress.c_str());
+		fclose(fp);
+	}
+	else
+		printf("Not found config.\n");
+
+}
+
 
 int main(int argc, char** argv)
 {
+	LoadConfig();
+
+
 	CURLcode res;
 	res = curl_global_init(CURL_GLOBAL_DEFAULT);
 

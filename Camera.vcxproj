@@ -93,41 +93,6 @@
     <ClInclude Include="camera_info.h" />
     <ClInclude Include="camera_thread.h" />
     <ClInclude Include="commander.h" />
-    <ClInclude Include="include\gphoto2pp\button_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\camera_abilities_list_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\camera_capture_type_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\camera_event_type_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\camera_file_path_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\camera_file_type_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\camera_file_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\camera_list_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\camera_widget_type_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\camera_widget_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\camera_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\choices_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\date_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\exceptions.hpp" />
-    <ClInclude Include="include\gphoto2pp\float_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\gp_port_info_list_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\helper_camera_wrapper.hpp" />
-    <ClInclude Include="include\gphoto2pp\helper_context.hpp" />
-    <ClInclude Include="include\gphoto2pp\helper_debugging.hpp" />
-    <ClInclude Include="include\gphoto2pp\helper_gphoto2.hpp" />
-    <ClInclude Include="include\gphoto2pp\helper_widgets.hpp" />
-    <ClInclude Include="include\gphoto2pp\int_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\log.h" />
-    <ClInclude Include="include\gphoto2pp\menu_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\non_value_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\observer.hpp" />
-    <ClInclude Include="include\gphoto2pp\radio_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\range_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\range_widget_range.hpp" />
-    <ClInclude Include="include\gphoto2pp\section_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\string_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\text_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\toggle_widget.hpp" />
-    <ClInclude Include="include\gphoto2pp\value_widget_base.hpp" />
-    <ClInclude Include="include\gphoto2pp\window_widget.hpp" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="memdb.h" />
     <ClInclude Include="network.h" />
@@ -136,6 +101,9 @@
     <ClInclude Include="tcpsocket.h" />
     <ClInclude Include="udpsocket.h" />
     <ClInclude Include="utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="config.txt" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
@@ -150,9 +118,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Link>
-      <AdditionalDependencies>gphoto2;gphoto2pp;%(AdditionalDependencies)</AdditionalDependencies>
-      <LibraryDependencies>%(LibraryDependencies)</LibraryDependencies>
-      <SharedLibrarySearchPath>./lib;%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <LibraryDependencies>gphoto2;gphoto2_port;pthread;curl;%(LibraryDependencies)</LibraryDependencies>
+      <SharedLibrarySearchPath>%(SharedLibrarySearchPath)</SharedLibrarySearchPath>
       <AdditionalLibraryDirectories>./lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -163,6 +131,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+    <Link>
+      <LibraryDependencies>gphoto2;gphoto2_port;pthread;curl;%(LibraryDependencies)</LibraryDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <Link>
       <LibraryDependencies>gphoto2;gphoto2_port;pthread;curl;%(LibraryDependencies)</LibraryDependencies>
     </Link>
